@@ -287,61 +287,11 @@ button {
 .stat-icon.budget { background: var(--accent-light); color: var(--accent); }
 
 /* ── Filter Toolbar ── */
-.filters-container {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-md);
-  margin-bottom: var(--space-xl);
-}
-
-.filter-group {
-  display: flex;
-  align-items: center;
-  gap: var(--space-md);
-  flex-wrap: wrap;
-}
-
-.filter-label {
-  font-size: var(--font-size-sm);
-  font-weight: 700;
-  color: var(--text-secondary);
-  min-width: 60px;
-}
-
-.segmented-control {
-  display: inline-flex;
-  background: var(--bg-inset, #f0f2f5);
-  padding: 4px;
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--border-light);
-}
-
-.segment-btn {
-  padding: 8px 16px;
-  border-radius: var(--radius-md);
-  font-size: var(--font-size-sm);
-  font-weight: 600;
-  color: var(--text-secondary);
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  transition: all var(--duration-fast) var(--ease-smooth);
-}
-
-.segment-btn:hover {
-  color: var(--text-primary);
-}
-
-.segment-btn.active {
-  background: var(--bg-card);
-  color: var(--text-primary);
-  box-shadow: var(--shadow-sm);
-}
-
 .filter-bar {
   display: flex;
   align-items: center;
   gap: var(--space-sm);
+  margin-bottom: var(--space-lg);
   flex-wrap: wrap;
 }
 

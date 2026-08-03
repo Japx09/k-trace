@@ -62,27 +62,19 @@
       </div>
     </section>
 
-    <div class="filters-container">
-      <div class="filter-group">
-        <span class="filter-label">Scope</span>
-        <section class="segmented-control" id="category-filter-bar">
-          <button class="segment-btn active" data-category="All">🏢 All</button>
-          <button class="segment-btn" data-category="City">🏙️ City Level</button>
-          <button class="segment-btn" data-category="Barangay">🏘️ Barangay Level</button>
-        </section>
-      </div>
+    <section class="filter-bar" id="category-filter-bar" style="margin-bottom: 10px;">
+      <button class="filter-pill active" data-category="All">🏢 All Scopes</button>
+      <button class="filter-pill" data-category="City">🏙️ City Level</button>
+      <button class="filter-pill" data-category="Barangay">🏘️ Barangay Level</button>
+    </section>
 
-      <div class="filter-group">
-        <span class="filter-label">Status</span>
-        <section class="filter-bar" id="status-filter-bar">
-          <button class="filter-pill active" data-status="All">All Statuses</button>
-          <button class="filter-pill" data-status="Pending">⏳ Pending</button>
-          <button class="filter-pill" data-status="Ongoing">🔨 Ongoing</button>
-          <button class="filter-pill" data-status="Completed">✅ Completed</button>
-          <button class="filter-pill" data-status="Delayed">🚨 Delayed</button>
-        </section>
-      </div>
-    </div>
+    <section class="filter-bar" id="status-filter-bar">
+      <button class="filter-pill active" data-status="All">All Statuses</button>
+      <button class="filter-pill" data-status="Pending">⏳ Pending</button>
+      <button class="filter-pill" data-status="Ongoing">🔨 Ongoing</button>
+      <button class="filter-pill" data-status="Completed">✅ Completed</button>
+      <button class="filter-pill" data-status="Delayed">🚨 Delayed</button>
+    </section>
 
     <section id="projects-section">
       <div class="projects-grid" id="projects-grid">
@@ -195,9 +187,9 @@
 
     function applyCategoryFilter(category) {
       activeCategory = category;
-      var btns = categoryFilterBar.querySelectorAll('.segment-btn');
-      for (var i = 0; i < btns.length; i++) {
-        btns[i].classList.toggle('active', btns[i].getAttribute('data-category') === category);
+      var pills = categoryFilterBar.querySelectorAll('.filter-pill');
+      for (var i = 0; i < pills.length; i++) {
+        pills[i].classList.toggle('active', pills[i].getAttribute('data-category') === category);
       }
       applyFilters();
     }
@@ -210,7 +202,7 @@
     });
 
     categoryFilterBar.addEventListener('click', function(e) {
-      if (e.target.classList.contains('segment-btn')) {
+      if (e.target.classList.contains('filter-pill')) {
         applyCategoryFilter(e.target.getAttribute('data-category'));
       }
     });

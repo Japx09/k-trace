@@ -7,6 +7,7 @@
   <title>K-Trace — Project Details</title>
   <link rel="icon" type="image/png" href="https://kabankalancity.gov.ph/wp-content/uploads/2023/09/Kabankalan_City_seal.svg_.png">
   <link rel="stylesheet" href="style.css">
+  <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body>
 
@@ -33,13 +34,33 @@
         <div class="skeleton" style="height:14px;width:80%;border-radius:6px"></div>
       </div>
       <div id="header-content" style="display:none">
-        <h1 class="detail-title" id="project-title"></h1>
-        <div class="detail-meta" id="project-meta"></div>
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 10px;">
+          <div>
+            <h1 class="detail-title" id="project-title"></h1>
+            <div class="detail-meta" id="project-meta"></div>
+          </div>
+          <div class="trust-badge" id="trust-badge" style="background: rgba(16, 185, 129, 0.1); color: #047857; padding: 8px 12px; border-radius: 12px; font-weight: 600; display: flex; align-items: center; gap: 6px; font-size: 0.9rem; display: none;">
+            <i data-lucide="shield-check" style="width: 18px; height: 18px;"></i>
+            <span id="trust-score">0% Citizen Verified</span>
+          </div>
+        </div>
         <p class="detail-description" id="project-description"></p>
       </div>
     </section>
 
     <section class="budget-summary" id="budget-summary" style="display:none">
+      <div class="summary-card" style="grid-column: 1 / -1; display: flex; flex-direction: column; justify-content: center;">
+        <div class="summary-label">Contractor Info</div>
+        <div class="summary-value" id="contractor-name" style="font-size: 1.25rem;">—</div>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 12px; flex-wrap: wrap; gap: 10px;">
+          <span style="font-size: 0.85rem; color: var(--text-light); font-weight: 500;">Awarded: <span id="contractor-date">—</span></span>
+          <span class="status-badge" style="background: #E0E7FF; color: #3730A3; border: none; font-size: 0.75rem;">Outsourced By LGU</span>
+        </div>
+        <a href="#" id="btn-view-contractor" style="display: inline-flex; align-items: center; gap: 5px; margin-top: 15px; font-size: 0.85rem; color: var(--primary); text-decoration: none; font-weight: 600;">
+          View Contractor History <i data-lucide="arrow-right" style="width: 14px; height: 14px;"></i>
+        </a>
+      </div>
+      
       <div class="summary-card">
         <div class="summary-label">Declared Total</div>
         <div class="summary-value total" id="summary-declared">—</div>
@@ -88,12 +109,15 @@
     </section>
 
     <section>
-      <div class="section-header">
+      <div class="section-header" style="flex-wrap: wrap; gap: 15px;">
         <div>
-          <h2 class="section-title">🗣️ Citizen Reports</h2>
-          <p class="section-subtitle">Public feedback and mismatch reports from citizens.</p>
+          <h2 class="section-title">🗣️ Citizen Feedback</h2>
+          <p class="section-subtitle">Public reports and verifications from citizens.</p>
         </div>
-        <button class="btn btn-primary" id="btn-report">🚩 Report Mismatch</button>
+        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+          <button class="btn btn-primary" id="btn-verify" style="background: #10B981; color: white; border: none; display: flex; align-items: center; gap: 6px;"><i data-lucide="check-circle" style="width:16px;height:16px;"></i> Verify Project</button>
+          <button class="btn btn-primary" id="btn-report" style="display: flex; align-items: center; gap: 6px;"><i data-lucide="flag" style="width:16px;height:16px;"></i> Report Mismatch</button>
+        </div>
       </div>
       <div class="reports-list" id="reports-list">
         <div class="no-reports">Loading reports...</div>
@@ -130,6 +154,72 @@
         <button type="submit" class="btn btn-primary btn-sm" id="submit-report-btn">Submit Report</button>
       </div>
     </form>
+  </dialog>
+
+  <!-- Verify Modal -->
+  <dialog class="modal-dialog" id="verify-modal" aria-labelledby="verify-modal-title">
+    <div class="modal-header">
+      <h2 class="modal-title" id="verify-modal-title" style="color: #047857;">✅ Verify this Project</h2>
+      <button class="modal-close" id="verify-modal-close-btn" aria-label="Close">✕</button>
+    </div>
+    <form id="verify-form">
+      <div class="modal-body">
+        <p style="font-size:var(--font-size-sm);color:var(--text-secondary);margin-bottom:var(--space-md);line-height:1.6">
+          Confirm that this project has been implemented correctly. Your verification increases the Citizen Trust Score.
+        </p>
+        <div class="form-group">
+          <label class="form-label" for="verify-name">Your Name <span class="optional">(or leave as Anonymous)</span></label>
+          <input class="form-input" type="text" id="verify-name" placeholder="Juan Dela Cruz" value="Anonymous">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="verify-comment">Your Comments</label>
+          <textarea class="form-textarea" id="verify-comment" placeholder="Everything looks good! (Optional)"></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="verify-proof">Photo Proof <span class="optional">(optional)</span></label>
+          <input class="form-input" type="file" id="verify-proof" accept="image/*">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary btn-sm" id="verify-modal-cancel-btn">Cancel</button>
+        <button type="submit" class="btn btn-primary btn-sm" id="submit-verify-btn" style="background: #10B981; border: none;">Submit Verification</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- Contractor History Modal -->
+  <dialog class="modal-dialog" id="contractor-modal" aria-labelledby="contractor-modal-title" style="max-width: 600px;">
+    <div class="modal-header">
+      <h2 class="modal-title" id="contractor-modal-title">🏢 Contractor History</h2>
+      <button class="modal-close" id="contractor-modal-close-btn" aria-label="Close">✕</button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:var(--font-size-sm);color:var(--text-secondary);margin-bottom:var(--space-md);line-height:1.6">
+        Transparency profile for <strong id="modal-contractor-name"></strong>. Below are simulated past government contracts awarded to this supplier.
+      </p>
+      
+      <div style="display: flex; flex-direction: column; gap: 15px;">
+        <div style="background: var(--card-bg); padding: 15px; border-radius: 12px; border: 1px solid var(--border);">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+            <h4 style="margin: 0 0 5px 0; font-size: 0.95rem;">Barangay Health Station Renovation</h4>
+            <span class="status-badge completed" style="font-size: 0.7rem;">Completed</span>
+          </div>
+          <p style="margin: 0 0 10px 0; font-size: 0.85rem; color: var(--text-secondary);">Awarded: March 12, 2023</p>
+          <div style="font-weight: 600; color: var(--text);">₱1,250,000</div>
+        </div>
+        <div style="background: var(--card-bg); padding: 15px; border-radius: 12px; border: 1px solid var(--border);">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+            <h4 style="margin: 0 0 5px 0; font-size: 0.95rem;">Procurement of Office Supplies</h4>
+            <span class="status-badge completed" style="font-size: 0.7rem;">Completed</span>
+          </div>
+          <p style="margin: 0 0 10px 0; font-size: 0.85rem; color: var(--text-secondary);">Awarded: September 05, 2022</p>
+          <div style="font-weight: 600; color: var(--text);">₱450,000</div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-secondary btn-sm" id="contractor-modal-cancel-btn">Close</button>
+    </div>
   </dialog>
 
   <div class="toast-container" id="toast-container"></div>
@@ -177,6 +267,7 @@
     }
 
     function formatDate(d) {
+      if (!d) return '—';
       return new Date(d).toLocaleDateString('en-PH', { year: 'numeric', month: 'long', day: 'numeric' });
     }
 
@@ -202,30 +293,46 @@
     }
 
     var FLAG_THRESHOLD = 0.10;
+    var projectData = null;
 
     // ── Fetch Project Details ──
     async function fetchProjectDetails() {
-      if (!projectId) {
-        document.getElementById('header-skeleton').innerHTML = '<div class="empty-state"><div class="empty-state-icon">❓</div><h3 class="empty-state-title">No Project ID</h3><p class="empty-state-text"><a href="index.html" style="color:var(--accent);font-weight:600">Return to Dashboard</a></p></div>';
-        return;
-      }
       try {
-        var projects = await supabaseFetch('projects', 'select=*&id=eq.' + projectId);
+        let projects;
+        if (!projectId) {
+          // Fallback: Fetch the most recent project if no ID is provided
+          projects = await supabaseFetch('projects', 'select=*&order=created_at.desc&limit=1');
+          if (projects && projects.length > 0) {
+            projectId = projects[0].id;
+          } else {
+             document.getElementById('header-skeleton').innerHTML = '<div class="empty-state"><div class="empty-state-icon">❓</div><h3 class="empty-state-title">No Projects Found</h3><p class="empty-state-text"><a href="index.html" style="color:var(--accent);font-weight:600">Return to Dashboard</a></p></div>';
+             return;
+          }
+        } else {
+          projects = await supabaseFetch('projects', 'select=*&id=eq.' + projectId);
+        }
+        
         if (!projects || projects.length === 0) throw new Error('Not found');
-        var project = projects[0];
+        projectData = projects[0];
 
-        document.getElementById('project-title').textContent = project.title;
-        document.getElementById('project-description').textContent = project.description || '';
+        document.getElementById('project-title').textContent = projectData.title;
+        document.getElementById('project-description').textContent = projectData.description || '';
         document.getElementById('project-meta').innerHTML =
-          '<span class="detail-meta-item"><span class="meta-icon">🏛️</span> ' + project.department + '</span>' +
-          '<span class="detail-meta-item"><span class="meta-icon">📍</span> ' + (project.location || 'TBD') + '</span>' +
-          '<span class="detail-meta-item"><span class="meta-icon">💰</span> ' + formatPeso(project.total_budget) + '</span>' +
-          '<span class="detail-meta-item"><span class="meta-icon">📅</span> ' + formatDate(project.created_at) + '</span>' +
-          '<span class="detail-meta-item">' + statusBadge(project.status) + '</span>';
+          '<span class="detail-meta-item"><i data-lucide="building-2" style="width:14px;height:14px"></i> ' + projectData.department + '</span>' +
+          '<span class="detail-meta-item"><i data-lucide="map-pin" style="width:14px;height:14px"></i> ' + (projectData.location || 'TBD') + '</span>' +
+          '<span class="detail-meta-item"><i data-lucide="banknote" style="width:14px;height:14px"></i> ' + formatPeso(projectData.total_budget) + '</span>' +
+          '<span class="detail-meta-item"><i data-lucide="calendar" style="width:14px;height:14px"></i> ' + formatDate(projectData.created_at) + '</span>' +
+          '<span class="detail-meta-item">' + statusBadge(projectData.status) + '</span>';
 
-        document.title = 'K-Trace — ' + project.title;
+        // Contractor Info
+        document.getElementById('contractor-name').textContent = projectData.contractor_name || 'Not specified';
+        document.getElementById('contractor-date').textContent = formatDate(projectData.award_date);
+        document.getElementById('modal-contractor-name').textContent = projectData.contractor_name || 'Unknown Contractor';
+
+        document.title = 'K-Trace — ' + projectData.title;
         document.getElementById('header-skeleton').style.display = 'none';
         document.getElementById('header-content').style.display = 'block';
+        lucide.createIcons();
       } catch (err) {
         document.getElementById('header-skeleton').innerHTML = '<div class="empty-state"><div class="empty-state-icon">⚠️</div><h3 class="empty-state-title">Project Not Found</h3><p class="empty-state-text">' + err.message + ' <a href="index.html" style="color:var(--accent);font-weight:600">Return</a></p></div>';
       }
@@ -295,47 +402,124 @@
       }
     }
 
-    // ── Fetch Citizen Reports ──
-    async function fetchReports() {
+    // ── Fetch Feedback (Reports & Verifications) ──
+    async function fetchReportsAndVerifications() {
       if (!projectId) return;
       var list = document.getElementById('reports-list');
       try {
-        var reports = await supabaseFetch('citizen_reports', 'select=*&project_id=eq.' + projectId + '&order=created_at.desc');
-        if (!reports || reports.length === 0) {
-          list.innerHTML = '<div class="no-reports"><p>No citizen reports yet.</p><p style="margin-top:8px;font-size:var(--font-size-xs)">Be the first to report a mismatch.</p></div>';
+        const [reports, verifications] = await Promise.all([
+          supabaseFetch('citizen_reports', 'select=*&project_id=eq.' + projectId + '&order=created_at.desc'),
+          supabaseFetch('citizen_verifications', 'select=*&project_id=eq.' + projectId + '&order=created_at.desc')
+        ]);
+        
+        var allFeedback = [];
+        if (reports) reports.forEach(r => allFeedback.push({...r, type: 'report'}));
+        if (verifications) verifications.forEach(v => allFeedback.push({...v, type: 'verification'}));
+        
+        // Trust Score logic
+        var totalFeedback = allFeedback.length;
+        var trustBadge = document.getElementById('trust-badge');
+        if (totalFeedback > 0) {
+          var verificationsCount = verifications ? verifications.length : 0;
+          var trustScore = Math.round((verificationsCount / totalFeedback) * 100);
+          document.getElementById('trust-score').textContent = trustScore + '% Citizen Verified';
+          trustBadge.style.display = 'flex';
+          
+          if (trustScore > 75) {
+            trustBadge.style.background = 'rgba(16, 185, 129, 0.1)';
+            trustBadge.style.color = '#047857'; // Green
+          } else if (trustScore > 40) {
+            trustBadge.style.background = 'rgba(245, 158, 11, 0.1)';
+            trustBadge.style.color = '#B45309'; // Yellow
+          } else {
+            trustBadge.style.background = 'rgba(239, 68, 68, 0.1)';
+            trustBadge.style.color = '#B91C1C'; // Red
+          }
+        }
+
+        allFeedback.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+        if (allFeedback.length === 0) {
+          list.innerHTML = '<div class="no-reports"><p>No citizen feedback yet.</p><p style="margin-top:8px;font-size:var(--font-size-xs)">Be the first to report or verify.</p></div>';
           return;
         }
         var html = '';
-        for (var i = 0; i < reports.length; i++) {
-          var r = reports[i];
-          html += '<div class="report-card">';
-          html += '<div class="report-header"><span class="report-author">🧑 ' + (r.citizen_name || 'Anonymous') + '</span>';
-          html += '<span class="report-date">' + relativeTime(r.created_at) + '</span></div>';
-          html += '<p class="report-comment">' + r.comment + '</p>';
-          if (r.proof_image_url) {
-            html += '<a href="' + r.proof_image_url + '" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:4px;margin-top:12px;font-size:var(--font-size-xs);font-weight:600;color:var(--accent)">📎 View evidence</a>';
+        for (var i = 0; i < allFeedback.length; i++) {
+          var f = allFeedback[i];
+          var isReport = f.type === 'report';
+          var icon = isReport ? '🚩' : '✅';
+          var authorColor = isReport ? 'var(--flag-red)' : '#10B981';
+
+          html += '<div class="report-card" style="border-left: 4px solid ' + authorColor + '">';
+          html += '<div class="report-header"><span class="report-author" style="color: ' + authorColor + '">' + icon + ' ' + (f.citizen_name || 'Anonymous') + '</span>';
+          html += '<span class="report-date">' + relativeTime(f.created_at) + '</span></div>';
+          html += '<p class="report-comment">' + (f.comment || '(No comment provided)') + '</p>';
+          if (f.proof_image_url) {
+            html += '<a href="' + f.proof_image_url + '" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:4px;margin-top:12px;font-size:var(--font-size-xs);font-weight:600;color:var(--accent)">📎 View evidence</a>';
           }
           html += '</div>';
         }
         list.innerHTML = html;
       } catch (err) {
-        list.innerHTML = '<div class="no-reports" style="color:var(--flag-red)">⚠️ Failed to load reports.</div>';
+        list.innerHTML = '<div class="no-reports" style="color:var(--flag-red)">⚠️ Failed to load feedback.</div>';
       }
     }
 
-    // ── Modal Logic ──
-    var modal = document.getElementById('report-modal');
-    document.getElementById('btn-report').addEventListener('click', function() { modal.showModal(); });
-    document.getElementById('modal-close-btn').addEventListener('click', function() { modal.close(); });
-    document.getElementById('modal-cancel-btn').addEventListener('click', function() { modal.close(); });
+    // ── Helper: Read Image File ──
+    async function processImageUpload(fileInput) {
+      if (!fileInput.files || !fileInput.files[0]) return null;
+      return new Promise(function(resolve) {
+        var reader = new FileReader();
+        reader.onload = function(evt) {
+          var img = new Image();
+          img.onload = function() {
+            var canvas = document.createElement('canvas');
+            var maxW = 800;
+            var scale = maxW / img.width;
+            if (scale > 1) scale = 1;
+            canvas.width = img.width * scale;
+            canvas.height = img.height * scale;
+            var ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            resolve(canvas.toDataURL('image/jpeg', 0.6));
+          };
+          img.src = evt.target.result;
+        };
+        reader.readAsDataURL(fileInput.files[0]);
+      });
+    }
+
+    // ── Modals Logic ──
+    var reportModal = document.getElementById('report-modal');
+    document.getElementById('btn-report').addEventListener('click', function() { reportModal.showModal(); });
+    document.getElementById('modal-close-btn').addEventListener('click', function() { reportModal.close(); });
+    document.getElementById('modal-cancel-btn').addEventListener('click', function() { reportModal.close(); });
+
+    var verifyModal = document.getElementById('verify-modal');
+    document.getElementById('btn-verify').addEventListener('click', function() { verifyModal.showModal(); });
+    document.getElementById('verify-modal-close-btn').addEventListener('click', function() { verifyModal.close(); });
+    document.getElementById('verify-modal-cancel-btn').addEventListener('click', function() { verifyModal.close(); });
+
+    var contractorModal = document.getElementById('contractor-modal');
+    document.getElementById('btn-view-contractor').addEventListener('click', function(e) {
+      e.preventDefault();
+      contractorModal.showModal();
+    });
+    document.getElementById('contractor-modal-close-btn').addEventListener('click', function() { contractorModal.close(); });
+    document.getElementById('contractor-modal-cancel-btn').addEventListener('click', function() { contractorModal.close(); });
 
     // Light-dismiss fallback
-    modal.addEventListener('click', function(e) {
-      if (e.target !== modal) return;
-      var rect = modal.getBoundingClientRect();
-      if (rect.top <= e.clientY && e.clientY <= rect.top + rect.height && rect.left <= e.clientX && e.clientX <= rect.left + rect.width) return;
-      modal.close();
-    });
+    function handleLightDismiss(modalEl) {
+      modalEl.addEventListener('click', function(e) {
+        if (e.target !== modalEl) return;
+        var rect = modalEl.getBoundingClientRect();
+        if (rect.top <= e.clientY && e.clientY <= rect.top + rect.height && rect.left <= e.clientX && e.clientX <= rect.left + rect.width) return;
+        modalEl.close();
+      });
+    }
+    handleLightDismiss(reportModal);
+    handleLightDismiss(verifyModal);
+    handleLightDismiss(contractorModal);
 
     // Submit report
     document.getElementById('report-form').addEventListener('submit', async function(e) {
@@ -346,9 +530,7 @@
 
       var name = document.getElementById('citizen-name').value.trim() || 'Anonymous';
       var comment = document.getElementById('citizen-comment').value.trim();
-      
       var proofInput = document.getElementById('citizen-proof');
-      var proof = null;
 
       if (!comment) {
         showToast('Please describe the mismatch.', 'error');
@@ -357,29 +539,7 @@
         return;
       }
 
-      if (proofInput.files && proofInput.files[0]) {
-        btn.textContent = 'Processing Image...';
-        proof = await new Promise(function(resolve) {
-          var reader = new FileReader();
-          reader.onload = function(evt) {
-            var img = new Image();
-            img.onload = function() {
-              var canvas = document.createElement('canvas');
-              var maxW = 800;
-              var scale = maxW / img.width;
-              if (scale > 1) scale = 1;
-              canvas.width = img.width * scale;
-              canvas.height = img.height * scale;
-              var ctx = canvas.getContext('2d');
-              ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-              resolve(canvas.toDataURL('image/jpeg', 0.6));
-            };
-            img.src = evt.target.result;
-          };
-          reader.readAsDataURL(proofInput.files[0]);
-        });
-        btn.textContent = 'Submitting...';
-      }
+      var proof = await processImageUpload(proofInput);
 
       try {
         await supabaseInsert('citizen_reports', {
@@ -389,10 +549,10 @@
           proof_image_url: proof
         });
         showToast('Report submitted! Thank you.', 'success');
-        modal.close();
+        reportModal.close();
         document.getElementById('report-form').reset();
         document.getElementById('citizen-name').value = 'Anonymous';
-        await fetchReports();
+        await fetchReportsAndVerifications();
       } catch (err) {
         showToast('Failed: ' + err.message, 'error');
       } finally {
@@ -401,11 +561,44 @@
       }
     });
 
+    // Submit verification
+    document.getElementById('verify-form').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      var btn = document.getElementById('submit-verify-btn');
+      btn.disabled = true;
+      btn.textContent = 'Submitting...';
+
+      var name = document.getElementById('verify-name').value.trim() || 'Anonymous';
+      var comment = document.getElementById('verify-comment').value.trim();
+      var proofInput = document.getElementById('verify-proof');
+
+      var proof = await processImageUpload(proofInput);
+
+      try {
+        await supabaseInsert('citizen_verifications', {
+          project_id: projectId,
+          citizen_name: name,
+          comment: comment,
+          proof_image_url: proof
+        });
+        showToast('Verification submitted! Trust score updated.', 'success');
+        verifyModal.close();
+        document.getElementById('verify-form').reset();
+        document.getElementById('verify-name').value = 'Anonymous';
+        await fetchReportsAndVerifications();
+      } catch (err) {
+        showToast('Failed: ' + err.message, 'error');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Submit Verification';
+      }
+    });
+
     // ── Init ──
     (async function() {
       await fetchProjectDetails();
       await fetchBudgetItems();
-      await fetchReports();
+      await fetchReportsAndVerifications();
     })();
   </script>
 </body>

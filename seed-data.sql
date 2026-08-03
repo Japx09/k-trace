@@ -8,6 +8,7 @@ ALTER TABLE projects ADD CONSTRAINT projects_status_check
   CHECK (status IN ('Pending', 'Ongoing', 'Completed', 'Delayed'));
 
 -- Step 2: Clear existing data safely
+DELETE FROM citizen_verifications;
 DELETE FROM citizen_reports;
 DELETE FROM budget_items;
 DELETE FROM projects;
@@ -15,11 +16,11 @@ DELETE FROM projects;
 -- ============================================================
 -- 1. INFRASTRUCTURE: Road Concreting (Ongoing)
 -- ============================================================
-INSERT INTO projects (id, title, description, department, total_budget, location, status, created_at)
+INSERT INTO projects (id, title, description, department, total_budget, location, lat, lng, contractor_name, award_date, status, created_at)
 VALUES ('11111111-1111-1111-1111-111111111101',
   'Concreting of Farm-to-Market Road (Phase 2)',
   'Portland Cement Concrete Pavement (PCCP) covering 1.5 kilometers with 0.20m thickness to support agricultural transport.',
-  'City Engineering Office / Brgy. Orong', 12450500.75, 'Sitio Buli to Proper, Brgy. Orong', 'Ongoing', '2025-01-10');
+  'City Engineering Office / Brgy. Orong', 12450500.75, 'Sitio Buli to Proper, Brgy. Orong', 9.991200, 122.821100, 'Negros Builders Depot', '2025-01-05', 'Ongoing', '2025-01-10');
 
 INSERT INTO budget_items (project_id, item_name, quantity, unit, srp_price, declared_price, justification) VALUES
 ('11111111-1111-1111-1111-111111111101', 'Portland Cement (40kg/bag)', 8500, 'bags', 225.00, 245.00, 'Supplier: Negros Builders Depot'),
@@ -31,11 +32,11 @@ INSERT INTO budget_items (project_id, item_name, quantity, unit, srp_price, decl
 -- ============================================================
 -- 2. HEALTHCARE: Medical Supplies Procurement (Completed)
 -- ============================================================
-INSERT INTO projects (id, title, description, department, total_budget, location, status, created_at)
+INSERT INTO projects (id, title, description, department, total_budget, location, lat, lng, contractor_name, award_date, status, created_at)
 VALUES ('11111111-1111-1111-1111-111111111102',
   'Procurement of Essential Medicines and Medical Supplies',
   'Quarterly bulk procurement of generic medicines for distribution to 32 Barangay Health Stations.',
-  'City Health Office', 3875200.00, 'City Health Office', 'Completed', '2024-11-05');
+  'City Health Office', 3875200.00, 'City Health Office', 9.985500, 122.812200, 'PharmaLink Distributors Inc.', '2024-10-15', 'Completed', '2024-11-05');
 
 INSERT INTO budget_items (project_id, item_name, quantity, unit, srp_price, declared_price, justification) VALUES
 ('11111111-1111-1111-1111-111111111102', 'Amoxicillin 500mg capsules (Box of 100)', 500, 'boxes', 150.00, 215.50, 'Supplier: PharmaLink Distributors Inc.'),
@@ -47,11 +48,11 @@ INSERT INTO budget_items (project_id, item_name, quantity, unit, srp_price, decl
 -- ============================================================
 -- 3. EDUCATION/SK: Laptops for Public Schools (Delayed)
 -- ============================================================
-INSERT INTO projects (id, title, description, department, total_budget, location, status, created_at)
+INSERT INTO projects (id, title, description, department, total_budget, location, lat, lng, contractor_name, award_date, status, created_at)
 VALUES ('11111111-1111-1111-1111-111111111103',
   'Digital Education Initiative: ICT Equipment',
   'Procurement of laptops, smart TVs, and networking peripherals for Senior High School public teachers.',
-  'Sangguniang Kabataan Federation', 5250000.00, 'Kabankalan National High School', 'Delayed', '2024-09-15');
+  'Sangguniang Kabataan Federation', 5250000.00, 'Kabankalan National High School', 9.976600, 122.809000, 'TechVision Solutions Bacolod', '2024-09-01', 'Delayed', '2024-09-15');
 
 INSERT INTO budget_items (project_id, item_name, quantity, unit, srp_price, declared_price, justification) VALUES
 ('11111111-1111-1111-1111-111111111103', 'Mid-range Laptops (Core i5, 8GB RAM, 512GB SSD)', 120, 'units', 35000.00, 38500.00, 'Supplier: TechVision Solutions Bacolod'),
@@ -62,11 +63,11 @@ INSERT INTO budget_items (project_id, item_name, quantity, unit, srp_price, decl
 -- ============================================================
 -- 4. AGRICULTURE: Fertilizer Subsidy (Completed)
 -- ============================================================
-INSERT INTO projects (id, title, description, department, total_budget, location, status, created_at)
+INSERT INTO projects (id, title, description, department, total_budget, location, lat, lng, contractor_name, award_date, status, created_at)
 VALUES ('11111111-1111-1111-1111-111111111104',
   'Fertilizer Subsidy for Registered Rice Farmers',
   'Distribution of Urea and Complete Fertilizers to 1,500 registered farmers under the RSBSA.',
-  'City Agriculture Office', 4850000.00, 'City Agriculture Compound', 'Completed', '2024-10-01');
+  'City Agriculture Office', 4850000.00, 'City Agriculture Compound', 9.988000, 122.825000, 'Negros Agri-Chem Traders', '2024-09-20', 'Completed', '2024-10-01');
 
 INSERT INTO budget_items (project_id, item_name, quantity, unit, srp_price, declared_price, justification) VALUES
 ('11111111-1111-1111-1111-111111111104', 'Urea Fertilizer (46-0-0) - 50kg', 1500, 'bags', 1600.00, 1850.00, 'Supplier: Negros Agri-Chem Traders'),
@@ -76,11 +77,11 @@ INSERT INTO budget_items (project_id, item_name, quantity, unit, srp_price, decl
 -- ============================================================
 -- 5. BARANGAY: Multi-Purpose Hall (Ongoing)
 -- ============================================================
-INSERT INTO projects (id, title, description, department, total_budget, location, status, created_at)
+INSERT INTO projects (id, title, description, department, total_budget, location, lat, lng, contractor_name, award_date, status, created_at)
 VALUES ('11111111-1111-1111-1111-111111111105',
   'Rehabilitation of Multi-Purpose Gym',
   'Reroofing, repainting, and installation of new LED lighting fixtures.',
-  'Barangay Binicuil', 1200500.00, 'Brgy. Binicuil', 'Ongoing', '2025-02-01');
+  'Barangay Binicuil', 1200500.00, 'Brgy. Binicuil', 10.010200, 122.795000, 'Southern Steel Supply', '2025-01-20', 'Ongoing', '2025-02-01');
 
 INSERT INTO budget_items (project_id, item_name, quantity, unit, srp_price, declared_price, justification) VALUES
 ('11111111-1111-1111-1111-111111111105', 'Prepainted Corrugated Roofing Sheets (0.5mm)', 450, 'l.m.', 350.00, 385.00, 'Supplier: Southern Steel Supply'),
@@ -91,11 +92,11 @@ INSERT INTO budget_items (project_id, item_name, quantity, unit, srp_price, decl
 -- ============================================================
 -- 6. RENEWABLE ENERGY: Solar Streetlights (Completed)
 -- ============================================================
-INSERT INTO projects (id, title, description, department, total_budget, location, status, created_at)
+INSERT INTO projects (id, title, description, department, total_budget, location, lat, lng, contractor_name, award_date, status, created_at)
 VALUES ('11111111-1111-1111-1111-111111111106',
   'Installation of Solar-Powered Streetlights',
   'Procurement and installation of 150 units of 100W integrated solar streetlights for off-grid barangay roads.',
-  'City Engineering / Brgy. Salong', 3750000.00, 'Brgy. Salong', 'Completed', '2024-08-10');
+  'City Engineering / Brgy. Salong', 3750000.00, 'Brgy. Salong', 9.965000, 122.780000, 'EcoTech Lighting PH', '2024-07-15', 'Completed', '2024-08-10');
 
 INSERT INTO budget_items (project_id, item_name, quantity, unit, srp_price, declared_price, justification) VALUES
 ('11111111-1111-1111-1111-111111111106', 'Integrated Solar Streetlight (100W)', 150, 'units', 22500.00, 25000.00, 'Supplier: EcoTech Lighting PH'),
@@ -105,11 +106,11 @@ INSERT INTO budget_items (project_id, item_name, quantity, unit, srp_price, decl
 -- ============================================================
 -- 7. DISASTER RISK MGMT: Evacuation Center (Pending)
 -- ============================================================
-INSERT INTO projects (id, title, description, department, total_budget, location, status, created_at)
+INSERT INTO projects (id, title, description, department, total_budget, location, lat, lng, contractor_name, award_date, status, created_at)
 VALUES ('11111111-1111-1111-1111-111111111107',
   'Construction of Regional Evacuation Center',
   'A multi-story facility with complete sanitation stations, command center, and stockrooms for disaster preparedness.',
-  'DRRMO / DPWH', 35000000.00, 'Brgy. Tapi', 'Pending', '2025-04-01');
+  'DRRMO / DPWH', 35000000.00, 'Brgy. Tapi', 9.950000, 122.850000, 'Kabankalan Ready-Mix', '2025-03-10', 'Pending', '2025-04-01');
 
 INSERT INTO budget_items (project_id, item_name, quantity, unit, srp_price, declared_price, justification) VALUES
 ('11111111-1111-1111-1111-111111111107', 'Initial Structural Steel Materials', 1, 'lot', 8500000.00, 8500000.00, 'Under Bidding Process'),
@@ -119,11 +120,11 @@ INSERT INTO budget_items (project_id, item_name, quantity, unit, srp_price, decl
 -- ============================================================
 -- 8. WATER SERVICES: Upgrading Water System (Ongoing)
 -- ============================================================
-INSERT INTO projects (id, title, description, department, total_budget, location, status, created_at)
+INSERT INTO projects (id, title, description, department, total_budget, location, lat, lng, contractor_name, award_date, status, created_at)
 VALUES ('11111111-1111-1111-1111-111111111108',
   'Level III Water System Upgrading',
   'Installation of main distribution lines and tapping of new water source to supply 500 households.',
-  'Waterworks Department', 8500000.00, 'Brgy. Bantayan', 'Ongoing', '2024-11-20');
+  'Waterworks Department', 8500000.00, 'Brgy. Bantayan', 10.020000, 122.800000, 'Visayas Pipe Manufacturers', '2024-11-01', 'Ongoing', '2024-11-20');
 
 INSERT INTO budget_items (project_id, item_name, quantity, unit, srp_price, declared_price, justification) VALUES
 ('11111111-1111-1111-1111-111111111108', 'HDPE Pipes (6 inches, SDR 11)', 250, 'rolls', 12500.00, 13200.00, 'Supplier: Visayas Pipe Manufacturers'),
@@ -133,11 +134,11 @@ INSERT INTO budget_items (project_id, item_name, quantity, unit, srp_price, decl
 -- ============================================================
 -- 9. EMERGENCY RESPONSE: Rescue Vehicles (Completed)
 -- ============================================================
-INSERT INTO projects (id, title, description, department, total_budget, location, status, created_at)
+INSERT INTO projects (id, title, description, department, total_budget, location, lat, lng, contractor_name, award_date, status, created_at)
 VALUES ('11111111-1111-1111-1111-111111111109',
   'Procurement of 4x4 Rescue Vehicles',
   'Purchase of 3 fully-equipped 4x4 rescue pickup trucks with winches and medical trauma kits.',
-  'DRRMO', 6900000.00, 'City Hall Compound', 'Completed', '2024-05-12');
+  'DRRMO', 6900000.00, 'City Hall Compound', 9.981800, 122.815700, 'Southern Motors Corp.', '2024-04-20', 'Completed', '2024-05-12');
 
 INSERT INTO budget_items (project_id, item_name, quantity, unit, srp_price, declared_price, justification) VALUES
 ('11111111-1111-1111-1111-111111111109', '4x4 Pickup Truck (Customized with Canopy)', 3, 'units', 2100000.00, 2300000.00, 'Supplier: Southern Motors Corp.'),
@@ -147,11 +148,11 @@ INSERT INTO budget_items (project_id, item_name, quantity, unit, srp_price, decl
 -- ============================================================
 -- 10. INFRASTRUCTURE: Drainage System (Delayed)
 -- ============================================================
-INSERT INTO projects (id, title, description, department, total_budget, location, status, created_at)
+INSERT INTO projects (id, title, description, department, total_budget, location, lat, lng, contractor_name, award_date, status, created_at)
 VALUES ('11111111-1111-1111-1111-111111111110',
   'Flood Control and Drainage Improvement',
   'Excavation and installation of reinforced concrete pipes to address flash floods during rainy season.',
-  'City Engineering Office', 15200000.00, 'Brgy. Magballo', 'Delayed', '2023-11-01');
+  'City Engineering Office', 15200000.00, 'Brgy. Magballo', 9.960000, 122.820000, 'XYZ Heavy Equipment', '2023-10-15', 'Delayed', '2023-11-01');
 
 INSERT INTO budget_items (project_id, item_name, quantity, unit, srp_price, declared_price, justification) VALUES
 ('11111111-1111-1111-1111-111111111110', 'Reinforced Concrete Pipes (36-inch dia)', 800, 'pcs', 4500.00, 4800.00, 'Supplier: Negros Builders Depot'),
@@ -161,11 +162,11 @@ INSERT INTO budget_items (project_id, item_name, quantity, unit, srp_price, decl
 -- ============================================================
 -- 11. BARANGAY: Patrol Vehicles (Completed)
 -- ============================================================
-INSERT INTO projects (id, title, description, department, total_budget, location, status, created_at)
+INSERT INTO projects (id, title, description, department, total_budget, location, lat, lng, contractor_name, award_date, status, created_at)
 VALUES ('11111111-1111-1111-1111-111111111111',
   'Procurement of Barangay Patrol Tricycles',
   'Procurement of 5 multi-purpose tricycles for barangay tanod night patrols and emergency transport.',
-  'Barangay Tabugon', 850000.00, 'Brgy. Tabugon', 'Completed', '2024-03-25');
+  'Barangay Tabugon', 850000.00, 'Brgy. Tabugon', 10.005000, 122.785000, 'Kabankalan Motor Hub', '2024-03-01', 'Completed', '2024-03-25');
 
 INSERT INTO budget_items (project_id, item_name, quantity, unit, srp_price, declared_price, justification) VALUES
 ('11111111-1111-1111-1111-111111111111', '155cc Motorcycle with Custom Sidecar', 5, 'units', 150000.00, 170000.00, 'Supplier: Kabankalan Motor Hub'),
@@ -175,11 +176,11 @@ INSERT INTO budget_items (project_id, item_name, quantity, unit, srp_price, decl
 -- ============================================================
 -- 12. ECONOMIC: Public Market Rehab (Ongoing)
 -- ============================================================
-INSERT INTO projects (id, title, description, department, total_budget, location, status, created_at)
+INSERT INTO projects (id, title, description, department, total_budget, location, lat, lng, contractor_name, award_date, status, created_at)
 VALUES ('11111111-1111-1111-1111-111111111112',
   'Rehabilitation of Wet Market Section',
   'Tiling of meat/fish stalls, upgrading of drainage, and installation of proper ventilation systems.',
-  'Economic Enterprise Dept.', 4100000.00, 'Kabankalan Public Market, Brgy. Poblacion', 'Ongoing', '2025-01-20');
+  'Economic Enterprise Dept.', 4100000.00, 'Kabankalan Public Market, Brgy. Poblacion', 9.982500, 122.816000, 'Ceramica Negrense', '2025-01-10', 'Ongoing', '2025-01-20');
 
 INSERT INTO budget_items (project_id, item_name, quantity, unit, srp_price, declared_price, justification) VALUES
 ('11111111-1111-1111-1111-111111111112', 'Non-Slip Ceramic Tiles (60x60cm)', 1200, 'pcs', 180.00, 210.00, 'Supplier: Ceramica Negrense'),
@@ -194,3 +195,11 @@ INSERT INTO citizen_reports (id, project_id, citizen_name, comment, proof_image_
 ('22222222-2222-2222-2222-222222222201', '11111111-1111-1111-1111-111111111101', 'Concerned Citizen', 'Ang price ng semento diri sa Kabankalan is around 220-230 lang per bag, ngaa sa budget 245 pesos? Dako ang patong.', NULL),
 ('22222222-2222-2222-2222-222222222202', '11111111-1111-1111-1111-111111111103', 'DepEd Teacher', 'Sabi sa status "Delayed" pero ang laptops na ito ay last year pa na budgetan. Wala pa kaming natatanggap.', NULL),
 ('22222222-2222-2222-2222-222222222203', '11111111-1111-1111-1111-111111111110', 'Juan Dela Cruz', 'Matagal nang nakatiwangwang ang drainage dito, tag-ulan na ulit wala pading movement!', NULL);
+
+-- ============================================================
+-- CITIZEN VERIFICATIONS (Upvotes)
+-- ============================================================
+INSERT INTO citizen_verifications (id, project_id, citizen_name, comment, proof_image_url) VALUES
+('33333333-3333-3333-3333-333333333301', '11111111-1111-1111-1111-111111111102', 'Health Worker', 'Medicines arrived on time and complete inventory as listed.', NULL),
+('33333333-3333-3333-3333-333333333302', '11111111-1111-1111-1111-111111111104', 'Farmer Kiko', 'Salamat sa LGU, nakuha na namon ang abono. Dako nga bulig para sa amon pananum.', NULL),
+('33333333-3333-3333-3333-333333333303', '11111111-1111-1111-1111-111111111109', 'Volunteer Rescuer', 'New vehicles are highly equipped. Excellent quality for emergency responses.', NULL);

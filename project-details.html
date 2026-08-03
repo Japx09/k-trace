@@ -162,7 +162,15 @@
     }
 
     var params = new URLSearchParams(window.location.search);
-    var projectId = params.get('id');
+    var urlId = params.get('id');
+    
+    // Secure URL handling: Hide ID from address bar but keep it in session storage
+    if (urlId) {
+      sessionStorage.setItem('k_trace_current_project', urlId);
+      // Clean the URL bar to prevent people from seeing or tampering with the ID
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+    var projectId = urlId || sessionStorage.getItem('k_trace_current_project');
 
     function formatPeso(n) {
       return '₱' + Number(n).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });

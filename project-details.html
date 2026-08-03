@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="K-Trace Project Details — View itemized budget, verify prices against SRP, and report mismatches.">
+  <title>K-Trace — Project Details</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div class="app-container">
+    <nav class="top-bar">
+      <a href="index.html" class="brand">
+        <div class="brand-icon">K</div>
+        <div class="brand-text">
+          <span class="brand-name">K-Trace</span>
+          <span class="brand-tagline">Kabankalan Transparency</span>
+        </div>
+      </a>
+      <div class="nav-links">
+        <a href="index.html" class="nav-pill">Dashboard</a>
+        <a href="#" class="nav-pill active">Project Details</a>
+      </div>
+    </nav>
+
+    <section class="detail-header" id="detail-header">
+      <a href="index.html" class="detail-back">← Back to Dashboard</a>
+      <div id="header-skeleton">
+        <div class="skeleton" style="height:32px;width:60%;margin-bottom:12px;border-radius:8px"></div>
+        <div class="skeleton" style="height:18px;width:40%;margin-bottom:20px;border-radius:6px"></div>
+        <div class="skeleton" style="height:14px;width:80%;border-radius:6px"></div>
+      </div>
+      <div id="header-content" style="display:none">
+        <h1 class="detail-title" id="project-title"></h1>
+        <div class="detail-meta" id="project-meta"></div>
+        <p class="detail-description" id="project-description"></p>
+      </div>
+    </section>
+
+    <section class="budget-summary" id="budget-summary" style="display:none">
+      <div class="summary-card">
+        <div class="summary-label">Declared Total</div>
+        <div class="summary-value total" id="summary-declared">—</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-label">SRP Baseline</div>
+        <div class="summary-value" id="summary-srp" style="color:var(--text-secondary)">—</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-label">Total Variance</div>
+        <div class="summary-value flagged-count" id="summary-variance">—</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-label">Flagged Items</div>
+        <div class="summary-value flagged-count" id="summary-flagged">—</div>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-header">
+        <div>
+          <h2 class="section-title">📦 Itemized Budget</h2>
+          <p class="section-subtitle">Each item is verified against the Standard Retail Price (SRP).</p>
+        </div>
+      </div>
+      <div class="table-card">
+        <div class="table-wrapper">
+          <table class="data-table" id="budget-table">
+            <thead>
+              <tr>
+                <th>Item</th>
+                <th>Qty</th>
+                <th>Unit</th>
+                <th>SRP (₱)</th>
+                <th>Declared (₱)</th>
+                <th>Variance</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="budget-tbody">
+              <tr><td colspan="7"><div class="skeleton skeleton-row"></div><div class="skeleton skeleton-row"></div><div class="skeleton skeleton-row"></div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-header">
+        <div>
+          <h2 class="section-title">🗣️ Citizen Reports</h2>
+          <p class="section-subtitle">Public feedback and mismatch reports from citizens.</p>
+        </div>
+        <button class="btn btn-primary" id="btn-report">🚩 Report Mismatch</button>
+      </div>
+      <div class="reports-list" id="reports-list">
+        <div class="no-reports">Loading reports...</div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Report Modal -->
+  <dialog class="modal-dialog" id="report-modal" aria-labelledby="modal-title">
+    <div class="modal-header">
+      <h2 class="modal-title" id="modal-title">🚩 Report a Mismatch</h2>
+      <button class="modal-close" id="modal-close-btn" aria-label="Close">✕</button>
+    </div>
+    <form id="report-form">
+      <div class="modal-body">
+        <p style="font-size:var(--font-size-sm);color:var(--text-secondary);margin-bottom:var(--space-md);line-height:1.6">
+          Found a discrepancy? Submit your report below. All reports are public.
+        </p>
+        <div class="form-group">
+          <label class="form-label" for="citizen-name">Your Name <span class="optional">(or leave as Anonymous)</span></label>
+          <input class="form-input" type="text" id="citizen-name" placeholder="Juan Dela Cruz" value="Anonymous">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="citizen-comment">Your Report *</label>
+          <textarea class="form-textarea" id="citizen-comment" placeholder="Describe the mismatch you observed..." required></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="citizen-proof">Photo Evidence URL <span class="optional">(optional)</span></label>
+          <input class="form-input" type="url" id="citizen-proof" placeholder="https://example.com/photo.jpg">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary btn-sm" id="modal-cancel-btn">Cancel</button>
+        <button type="submit" class="btn btn-primary btn-sm" id="submit-report-btn">Submit Report</button>
+      </div>
+    </form>
+  </dialog>
+
+  <div class="toast-container" id="toast-container"></div>
+
+  <script>
+    var SUPABASE_URL = 'https://aknvhyezfkfjglpfkjdi.supabase.co';
+    var SUPABASE_KEY = 'sb_publishable_gqv6WXEo8cVvIVwrLLXuzQ_lqmfSCC6';
+
+    // Direct REST helpers
+    async function supabaseFetch(table, query) {
+      var res = await fetch(SUPABASE_URL + '/rest/v1/' + table + '?' + query, {
+        headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY }
+      });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      return res.json();
+    }
+
+    async function supabaseInsert(table, body) {
+      var res = await fetch(SUPABASE_URL + '/rest/v1/' + table, {
+        method: 'POST',
+        headers: {
+          'apikey': SUPABASE_KEY,
+          'Authorization': 'Bearer ' + SUPABASE_KEY,
+          'Content-Type': 'application/json',
+          'Prefer': 'return=minimal'
+        },
+        body: JSON.stringify(body)
+      });
+      if (!res.ok) throw new Error('HTTP ' + res.status + ': ' + (await res.text()));
+    }
+
+    var params = new URLSearchParams(window.location.search);
+    var projectId = params.get('id');
+
+    function formatPeso(n) {
+      return '₱' + Number(n).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    function formatDate(d) {
+      return new Date(d).toLocaleDateString('en-PH', { year: 'numeric', month: 'long', day: 'numeric' });
+    }
+
+    function relativeTime(d) {
+      var diff = Math.floor((Date.now() - new Date(d).getTime()) / 1000);
+      if (diff < 60) return 'Just now';
+      if (diff < 3600) return Math.floor(diff / 60) + 'm ago';
+      if (diff < 86400) return Math.floor(diff / 3600) + 'h ago';
+      return formatDate(d);
+    }
+
+    function statusBadge(s) {
+      return '<span class="status-badge ' + s.toLowerCase() + '">' + s + '</span>';
+    }
+
+    function showToast(msg, type) {
+      var c = document.getElementById('toast-container');
+      var t = document.createElement('div');
+      t.className = 'toast ' + (type || 'success');
+      t.innerHTML = '<span>' + (type === 'error' ? '✕' : '✓') + '</span> ' + msg;
+      c.appendChild(t);
+      setTimeout(function() { t.remove(); }, 4000);
+    }
+
+    var FLAG_THRESHOLD = 0.10;
+
+    // ── Fetch Project Details ──
+    async function fetchProjectDetails() {
+      if (!projectId) {
+        document.getElementById('header-skeleton').innerHTML = '<div class="empty-state"><div class="empty-state-icon">❓</div><h3 class="empty-state-title">No Project ID</h3><p class="empty-state-text"><a href="index.html" style="color:var(--accent);font-weight:600">Return to Dashboard</a></p></div>';
+        return;
+      }
+      try {
+        var projects = await supabaseFetch('projects', 'select=*&id=eq.' + projectId);
+        if (!projects || projects.length === 0) throw new Error('Not found');
+        var project = projects[0];
+
+        document.getElementById('project-title').textContent = project.title;
+        document.getElementById('project-description').textContent = project.description || '';
+        document.getElementById('project-meta').innerHTML =
+          '<span class="detail-meta-item"><span class="meta-icon">🏛️</span> ' + project.department + '</span>' +
+          '<span class="detail-meta-item"><span class="meta-icon">📍</span> ' + (project.location || 'TBD') + '</span>' +
+          '<span class="detail-meta-item"><span class="meta-icon">💰</span> ' + formatPeso(project.total_budget) + '</span>' +
+          '<span class="detail-meta-item"><span class="meta-icon">📅</span> ' + formatDate(project.created_at) + '</span>' +
+          '<span class="detail-meta-item">' + statusBadge(project.status) + '</span>';
+
+        document.title = 'K-Trace — ' + project.title;
+        document.getElementById('header-skeleton').style.display = 'none';
+        document.getElementById('header-content').style.display = 'block';
+      } catch (err) {
+        document.getElementById('header-skeleton').innerHTML = '<div class="empty-state"><div class="empty-state-icon">⚠️</div><h3 class="empty-state-title">Project Not Found</h3><p class="empty-state-text">' + err.message + ' <a href="index.html" style="color:var(--accent);font-weight:600">Return</a></p></div>';
+      }
+    }
+
+    // ── Fetch Budget Items ──
+    async function fetchBudgetItems() {
+      if (!projectId) return;
+      var tbody = document.getElementById('budget-tbody');
+      try {
+        var items = await supabaseFetch('budget_items', 'select=*&project_id=eq.' + projectId + '&order=created_at.asc');
+        if (!items || items.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="7"><div class="no-reports">No budget items submitted yet.</div></td></tr>';
+          return;
+        }
+
+        var totalDeclared = 0, totalSRP = 0, flaggedCount = 0;
+        var html = '';
+
+        for (var i = 0; i < items.length; i++) {
+          var item = items[i];
+          var srp = Number(item.srp_price);
+          var declared = Number(item.declared_price);
+          var qty = Number(item.quantity) || 1;
+          var variance = declared - srp;
+          var pct = srp > 0 ? ((variance / srp) * 100) : 0;
+          var isFlagged = pct > (FLAG_THRESHOLD * 100);
+
+          totalDeclared += declared * qty;
+          totalSRP += srp * qty;
+          if (isFlagged) flaggedCount++;
+
+          var rowClass = isFlagged ? 'flagged' : (variance === 0 ? 'verified' : '');
+          var priceClass = isFlagged ? 'over' : 'match';
+          var flagLabel = isFlagged
+            ? '<span class="flag-indicator over">⚠ Flagged (+' + pct.toFixed(0) + '%)</span>'
+            : '<span class="flag-indicator match">✓ Verified</span>';
+
+          var justification = '';
+          if (isFlagged && item.justification) {
+            justification = '<div class="justification-text">💬 <strong>Justification:</strong> ' + item.justification + '</div>';
+          } else if (isFlagged && !item.justification) {
+            justification = '<div class="justification-text" style="background:#FEE2E2;border-left-color:var(--flag-red)">⚠️ <strong>No justification provided</strong></div>';
+          }
+
+          html += '<tr class="' + rowClass + '">';
+          html += '<td><strong>' + item.item_name + '</strong>' + justification + '</td>';
+          html += '<td data-label="Qty">' + qty + '</td>';
+          html += '<td data-label="Unit">' + (item.unit || 'pc') + '</td>';
+          html += '<td data-label="SRP" class="price-cell">' + formatPeso(srp) + '</td>';
+          html += '<td data-label="Declared" class="price-cell ' + priceClass + '">' + formatPeso(declared) + '</td>';
+          html += '<td data-label="Variance"><span class="variance ' + (variance > 0 ? 'positive' : 'zero') + '">' + (variance > 0 ? '+' : '') + formatPeso(variance) + '</span></td>';
+          html += '<td data-label="Status">' + flagLabel + '</td>';
+          html += '</tr>';
+        }
+
+        tbody.innerHTML = html;
+
+        var totalVariance = totalDeclared - totalSRP;
+        document.getElementById('summary-declared').textContent = formatPeso(totalDeclared);
+        document.getElementById('summary-srp').textContent = formatPeso(totalSRP);
+        document.getElementById('summary-variance').textContent = (totalVariance > 0 ? '+' : '') + formatPeso(totalVariance);
+        document.getElementById('summary-flagged').textContent = flaggedCount + ' item' + (flaggedCount !== 1 ? 's' : '');
+        document.getElementById('budget-summary').style.display = 'grid';
+      } catch (err) {
+        tbody.innerHTML = '<tr><td colspan="7"><div class="no-reports" style="color:var(--flag-red)">⚠️ Failed to load budget items: ' + err.message + '</div></td></tr>';
+      }
+    }
+
+    // ── Fetch Citizen Reports ──
+    async function fetchReports() {
+      if (!projectId) return;
+      var list = document.getElementById('reports-list');
+      try {
+        var reports = await supabaseFetch('citizen_reports', 'select=*&project_id=eq.' + projectId + '&order=created_at.desc');
+        if (!reports || reports.length === 0) {
+          list.innerHTML = '<div class="no-reports"><p>No citizen reports yet.</p><p style="margin-top:8px;font-size:var(--font-size-xs)">Be the first to report a mismatch.</p></div>';
+          return;
+        }
+        var html = '';
+        for (var i = 0; i < reports.length; i++) {
+          var r = reports[i];
+          html += '<div class="report-card">';
+          html += '<div class="report-header"><span class="report-author">🧑 ' + (r.citizen_name || 'Anonymous') + '</span>';
+          html += '<span class="report-date">' + relativeTime(r.created_at) + '</span></div>';
+          html += '<p class="report-comment">' + r.comment + '</p>';
+          if (r.proof_image_url) {
+            html += '<a href="' + r.proof_image_url + '" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:4px;margin-top:12px;font-size:var(--font-size-xs);font-weight:600;color:var(--accent)">📎 View evidence</a>';
+          }
+          html += '</div>';
+        }
+        list.innerHTML = html;
+      } catch (err) {
+        list.innerHTML = '<div class="no-reports" style="color:var(--flag-red)">⚠️ Failed to load reports.</div>';
+      }
+    }
+
+    // ── Modal Logic ──
+    var modal = document.getElementById('report-modal');
+    document.getElementById('btn-report').addEventListener('click', function() { modal.showModal(); });
+    document.getElementById('modal-close-btn').addEventListener('click', function() { modal.close(); });
+    document.getElementById('modal-cancel-btn').addEventListener('click', function() { modal.close(); });
+
+    // Light-dismiss fallback
+    modal.addEventListener('click', function(e) {
+      if (e.target !== modal) return;
+      var rect = modal.getBoundingClientRect();
+      if (rect.top <= e.clientY && e.clientY <= rect.top + rect.height && rect.left <= e.clientX && e.clientX <= rect.left + rect.width) return;
+      modal.close();
+    });
+
+    // Submit report
+    document.getElementById('report-form').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      var btn = document.getElementById('submit-report-btn');
+      btn.disabled = true;
+      btn.textContent = 'Submitting...';
+
+      var name = document.getElementById('citizen-name').value.trim() || 'Anonymous';
+      var comment = document.getElementById('citizen-comment').value.trim();
+      var proof = document.getElementById('citizen-proof').value.trim() || null;
+
+      if (!comment) {
+        showToast('Please describe the mismatch.', 'error');
+        btn.disabled = false;
+        btn.textContent = 'Submit Report';
+        return;
+      }
+
+      try {
+        await supabaseInsert('citizen_reports', {
+          project_id: projectId,
+          citizen_name: name,
+          comment: comment,
+          proof_image_url: proof
+        });
+        showToast('Report submitted! Thank you.', 'success');
+        modal.close();
+        document.getElementById('report-form').reset();
+        document.getElementById('citizen-name').value = 'Anonymous';
+        await fetchReports();
+      } catch (err) {
+        showToast('Failed: ' + err.message, 'error');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Submit Report';
+      }
+    });
+
+    // ── Init ──
+    (async function() {
+      await fetchProjectDetails();
+      await fetchBudgetItems();
+      await fetchReports();
+    })();
+  </script>
+</body>
+</html>

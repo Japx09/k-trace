@@ -121,8 +121,8 @@
           <textarea class="form-textarea" id="citizen-comment" placeholder="Describe the mismatch you observed..." required></textarea>
         </div>
         <div class="form-group">
-          <label class="form-label" for="citizen-proof">Photo Evidence URL <span class="optional">(optional)</span></label>
-          <input class="form-input" type="url" id="citizen-proof" placeholder="https://example.com/photo.jpg">
+          <label class="form-label" for="citizen-proof">Photo Evidence <span class="optional">(optional)</span></label>
+          <input class="form-input" type="file" id="citizen-proof" accept="image/*">
         </div>
       </div>
       <div class="modal-footer">
@@ -346,13 +346,39 @@
 
       var name = document.getElementById('citizen-name').value.trim() || 'Anonymous';
       var comment = document.getElementById('citizen-comment').value.trim();
-      var proof = document.getElementById('citizen-proof').value.trim() || null;
+      
+      var proofInput = document.getElementById('citizen-proof');
+      var proof = null;
 
       if (!comment) {
         showToast('Please describe the mismatch.', 'error');
         btn.disabled = false;
         btn.textContent = 'Submit Report';
         return;
+      }
+
+      if (proofInput.files && proofInput.files[0]) {
+        btn.textContent = 'Processing Image...';
+        proof = await new Promise(function(resolve) {
+          var reader = new FileReader();
+          reader.onload = function(evt) {
+            var img = new Image();
+            img.onload = function() {
+              var canvas = document.createElement('canvas');
+              var maxW = 800;
+              var scale = maxW / img.width;
+              if (scale > 1) scale = 1;
+              canvas.width = img.width * scale;
+              canvas.height = img.height * scale;
+              var ctx = canvas.getContext('2d');
+              ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+              resolve(canvas.toDataURL('image/jpeg', 0.6));
+            };
+            img.src = evt.target.result;
+          };
+          reader.readAsDataURL(proofInput.files[0]);
+        });
+        btn.textContent = 'Submitting...';
       }
 
       try {

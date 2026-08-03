@@ -831,6 +831,7 @@ button {
   padding: 0;
   max-width: 520px;
   width: calc(100% - var(--space-xl) * 2);
+  margin: auto;
   background: var(--bg-card);
   animation: modalSlideUp var(--duration-slow) var(--ease-smooth);
 }

@@ -406,15 +406,24 @@
     async function fetchReportsAndVerifications() {
       if (!projectId) return;
       var list = document.getElementById('reports-list');
-      try {
-        const [reports, verifications] = await Promise.all([
-          supabaseFetch('citizen_reports', 'select=*&project_id=eq.' + projectId + '&order=created_at.desc'),
-          supabaseFetch('citizen_verifications', 'select=*&project_id=eq.' + projectId + '&order=created_at.desc')
-        ]);
+        let reports = [];
+        let verifications = [];
+
+        try {
+          reports = await supabaseFetch('citizen_reports', 'select=*&project_id=eq.' + projectId + '&order=created_at.desc');
+        } catch (e) {
+          console.warn('Could not fetch citizen_reports:', e);
+        }
+
+        try {
+          verifications = await supabaseFetch('citizen_verifications', 'select=*&project_id=eq.' + projectId + '&order=created_at.desc');
+        } catch (e) {
+          console.warn('Could not fetch citizen_verifications:', e);
+        }
         
         var allFeedback = [];
-        if (reports) reports.forEach(r => allFeedback.push({...r, type: 'report'}));
-        if (verifications) verifications.forEach(v => allFeedback.push({...v, type: 'verification'}));
+        if (reports && Array.isArray(reports)) reports.forEach(r => allFeedback.push({...r, type: 'report'}));
+        if (verifications && Array.isArray(verifications)) verifications.forEach(v => allFeedback.push({...v, type: 'verification'}));
         
         // Trust Score logic
         var totalFeedback = allFeedback.length;
@@ -460,9 +469,6 @@
           html += '</div>';
         }
         list.innerHTML = html;
-      } catch (err) {
-        list.innerHTML = '<div class="no-reports" style="color:var(--flag-red)">⚠️ Failed to load feedback.</div>';
-      }
     }
 
     // ── Helper: Read Image File ──

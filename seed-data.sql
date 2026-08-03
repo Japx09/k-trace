@@ -141,7 +141,7 @@ INSERT INTO projects (id, title, description, department, total_budget, location
 VALUES ('11111111-1111-1111-1111-111111111111',
   'Procurement of Barangay Patrol Tricycles',
   'Procurement of 5 multi-purpose tricycles for barangay tanod night patrols and emergency transport.',
-  'Barangay Dancalan', 850000.00, 'Brgy. Dancalan', 'Completed', '2024-03-25');
+  'Barangay Tabugon', 850000.00, 'Brgy. Tabugon', 'Completed', '2024-03-25');
 
 INSERT INTO budget_items (project_id, item_name, quantity, unit, srp_price, declared_price, justification) VALUES
 ('11111111-1111-1111-1111-111111111111', '155cc Motorcycle with Custom Sidecar', 5, 'units', 150000.00, 170000.00, 'Supplier: Kabankalan Motor Hub');

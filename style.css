@@ -155,15 +155,7 @@ button {
 .brand-icon {
   width: 40px;
   height: 40px;
-  background: var(--accent);
-  border-radius: var(--radius-sm);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-weight: 800;
-  font-size: var(--font-size-lg);
-  box-shadow: var(--shadow-button);
+  object-fit: contain;
 }
 
 .brand-text {
@@ -1087,8 +1079,6 @@ button {
   .brand-icon {
     width: 34px;
     height: 34px;
-    font-size: var(--font-size-base);
-    border-radius: 8px;
   }
 
   .nav-links {
@@ -1269,8 +1259,6 @@ button {
   .brand-icon {
     width: 30px;
     height: 30px;
-    font-size: var(--font-size-sm);
-    border-radius: 7px;
   }
 
   .brand-name {

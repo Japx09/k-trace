@@ -62,12 +62,18 @@
       </div>
     </section>
 
-    <section class="filter-bar" id="filter-bar">
-      <button class="filter-pill active" data-filter="All">All Projects</button>
-      <button class="filter-pill" data-filter="Pending">⏳ Pending</button>
-      <button class="filter-pill" data-filter="Ongoing">🔨 Ongoing</button>
-      <button class="filter-pill" data-filter="Completed">✅ Completed</button>
-      <button class="filter-pill" data-filter="Delayed">🚨 Delayed</button>
+    <section class="filter-bar" id="category-filter-bar" style="margin-bottom: 10px;">
+      <button class="filter-pill active" data-category="All">🏢 All Scopes</button>
+      <button class="filter-pill" data-category="City">🏙️ City Level</button>
+      <button class="filter-pill" data-category="Barangay">🏘️ Barangay Level</button>
+    </section>
+
+    <section class="filter-bar" id="status-filter-bar">
+      <button class="filter-pill active" data-status="All">All Statuses</button>
+      <button class="filter-pill" data-status="Pending">⏳ Pending</button>
+      <button class="filter-pill" data-status="Ongoing">🔨 Ongoing</button>
+      <button class="filter-pill" data-status="Completed">✅ Completed</button>
+      <button class="filter-pill" data-status="Delayed">🚨 Delayed</button>
     </section>
 
     <section id="projects-section">
@@ -97,9 +103,11 @@
     }
 
     let allProjects = [];
-    let activeFilter = 'All';
+    let activeStatus = 'All';
+    let activeCategory = 'All';
     const projectsGrid = document.getElementById('projects-grid');
-    const filterBar = document.getElementById('filter-bar');
+    const statusFilterBar = document.getElementById('status-filter-bar');
+    const categoryFilterBar = document.getElementById('category-filter-bar');
 
     function formatPeso(amount) {
       return '₱' + Number(amount).toLocaleString('en-PH', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
@@ -117,11 +125,14 @@
       var html = '';
       for (var i = 0; i < projects.length; i++) {
         var p = projects[i];
+        var isBrgy = (p.department.toLowerCase().includes('brgy') || p.department.toLowerCase().includes('barangay'));
+        var catBadge = isBrgy ? '<span class="status-badge" style="background:var(--card-bg);color:var(--text);border:1px solid var(--border)">🏘️ Barangay</span>' : '<span class="status-badge" style="background:var(--card-bg);color:var(--text);border:1px solid var(--border)">🏙️ City</span>';
+        
         html += '<a href="project-details.html?id=' + p.id + '" class="project-card">';
         html += '<div class="project-card-header"><div>';
         html += '<h3 class="project-card-title">' + p.title + '</h3>';
         html += '<p class="project-card-dept">' + p.department + '</p>';
-        html += '</div>' + statusBadge(p.status) + '</div>';
+        html += '</div><div style="display:flex;flex-direction:column;gap:5px;align-items:flex-end;">' + catBadge + statusBadge(p.status) + '</div></div>';
         html += '<p class="project-card-description">' + (p.description || 'No description.') + '</p>';
         html += '<div class="project-card-footer"><div>';
         html += '<div class="project-budget">' + formatPeso(p.total_budget) + '</div>';
@@ -148,26 +159,52 @@
       document.getElementById('stat-delayed').textContent = delayed;
     }
 
-    function applyFilter(filter) {
-      activeFilter = filter;
-      var pills = filterBar.querySelectorAll('.filter-pill');
-      for (var i = 0; i < pills.length; i++) {
-        pills[i].classList.toggle('active', pills[i].getAttribute('data-filter') === filter);
-      }
-      if (filter === 'All') {
-        renderProjects(allProjects);
-      } else {
-        var filtered = [];
-        for (var i = 0; i < allProjects.length; i++) {
-          if (allProjects[i].status === filter) filtered.push(allProjects[i]);
+    function applyFilters() {
+      var filtered = [];
+      for (var i = 0; i < allProjects.length; i++) {
+        var p = allProjects[i];
+        var isBrgy = (p.department.toLowerCase().includes('brgy') || p.department.toLowerCase().includes('barangay'));
+        var pCat = isBrgy ? 'Barangay' : 'City';
+        
+        var matchStatus = (activeStatus === 'All' || p.status === activeStatus);
+        var matchCategory = (activeCategory === 'All' || pCat === activeCategory);
+        
+        if (matchStatus && matchCategory) {
+          filtered.push(p);
         }
-        renderProjects(filtered);
       }
+      renderProjects(filtered);
     }
 
-    filterBar.addEventListener('click', function (e) {
-      var pill = e.target.closest('.filter-pill');
-      if (pill) applyFilter(pill.getAttribute('data-filter'));
+    function applyStatusFilter(status) {
+      activeStatus = status;
+      var pills = statusFilterBar.querySelectorAll('.filter-pill');
+      for (var i = 0; i < pills.length; i++) {
+        pills[i].classList.toggle('active', pills[i].getAttribute('data-status') === status);
+      }
+      applyFilters();
+    }
+
+    function applyCategoryFilter(category) {
+      activeCategory = category;
+      var pills = categoryFilterBar.querySelectorAll('.filter-pill');
+      for (var i = 0; i < pills.length; i++) {
+        pills[i].classList.toggle('active', pills[i].getAttribute('data-category') === category);
+      }
+      applyFilters();
+    }
+
+    // Event listeners for filters
+    statusFilterBar.addEventListener('click', function(e) {
+      if (e.target.classList.contains('filter-pill')) {
+        applyStatusFilter(e.target.getAttribute('data-status'));
+      }
+    });
+
+    categoryFilterBar.addEventListener('click', function(e) {
+      if (e.target.classList.contains('filter-pill')) {
+        applyCategoryFilter(e.target.getAttribute('data-category'));
+      }
     });
 
     async function fetchProjects() {

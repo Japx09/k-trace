@@ -272,14 +272,19 @@ button {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.1rem;
   margin-bottom: var(--space-xs);
 }
 
-.stat-icon.pending { background: var(--status-pending-bg); }
-.stat-icon.ongoing { background: var(--status-ongoing-bg); }
-.stat-icon.completed { background: var(--status-completed-bg); }
-.stat-icon.budget { background: var(--accent-light); }
+.stat-card .stat-icon svg {
+  width: 18px;
+  height: 18px;
+  stroke-width: 2.5;
+}
+
+.stat-icon.pending { background: var(--status-pending-bg); color: var(--status-pending); }
+.stat-icon.ongoing { background: var(--status-ongoing-bg); color: var(--status-ongoing); }
+.stat-icon.completed { background: var(--status-completed-bg); color: var(--status-completed); }
+.stat-icon.budget { background: var(--accent-light); color: var(--accent); }
 
 /* ── Filter Toolbar ── */
 .filter-bar {

@@ -8,6 +8,7 @@
     content="K-Trace — Kabankalan Transparency & Citizen Engagement. Track government projects, review itemized budgets, and report mismatches.">
   <title>K-Trace — Citizen Dashboard</title>
   <link rel="stylesheet" href="style.css">
+  <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 
 <body>
@@ -34,27 +35,27 @@
 
     <section class="stats-row" id="stats-row">
       <div class="stat-card">
-        <div class="stat-icon budget">💰</div>
+        <div class="stat-icon budget"><i data-lucide="banknote"></i></div>
         <span class="stat-label">Total Budget</span>
         <span class="stat-value" id="stat-total-budget">—</span>
       </div>
       <div class="stat-card">
-        <div class="stat-icon pending">⏳</div>
+        <div class="stat-icon pending"><i data-lucide="hourglass"></i></div>
         <span class="stat-label">Pending</span>
         <span class="stat-value" id="stat-pending">—</span>
       </div>
       <div class="stat-card">
-        <div class="stat-icon ongoing">🔨</div>
+        <div class="stat-icon ongoing"><i data-lucide="hammer"></i></div>
         <span class="stat-label">Ongoing</span>
         <span class="stat-value" id="stat-ongoing">—</span>
       </div>
       <div class="stat-card">
-        <div class="stat-icon completed">✅</div>
+        <div class="stat-icon completed"><i data-lucide="check-circle-2"></i></div>
         <span class="stat-label">Completed</span>
         <span class="stat-value" id="stat-completed">—</span>
       </div>
       <div class="stat-card">
-        <div class="stat-icon" style="background:#FEE2E2">🚨</div>
+        <div class="stat-icon" style="background:#FEE2E2; color:#991B1B"><i data-lucide="alert-triangle"></i></div>
         <span class="stat-label">Delayed</span>
         <span class="stat-value" id="stat-delayed">—</span>
       </div>
@@ -180,6 +181,9 @@
     }
 
     fetchProjects();
+    
+    // Initialize Lucide icons
+    lucide.createIcons();
   </script>
 </body>
 

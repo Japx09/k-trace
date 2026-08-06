@@ -23,6 +23,7 @@
       <div class="nav-links">
         <a href="index.html" class="nav-pill">Dashboard</a>
         <a href="#" class="nav-pill active">Project Details</a>
+        <a href="contractors.html" class="nav-pill">Contractors</a>
         <button class="theme-toggle" id="theme-toggle" aria-label="Toggle dark mode"><i data-lucide="moon"></i></button>
       </div>
     </nav>
@@ -81,11 +82,12 @@
     </section>
 
     <section>
-      <div class="section-header">
+      <div class="section-header" style="flex-wrap: wrap; gap: 10px;">
         <div>
           <h2 class="section-title"><span class="inline-icon"><i data-lucide="receipt"></i></span> Itemized Budget</h2>
           <p class="section-subtitle">Each item is verified against the Standard Retail Price (SRP).</p>
         </div>
+        <button class="export-btn" id="export-budget-csv"><i data-lucide="download"></i> Export Budget CSV</button>
       </div>
       <div class="table-card">
         <div class="table-wrapper">
@@ -357,6 +359,7 @@
       var tbody = document.getElementById('budget-tbody');
       try {
         var items = await supabaseFetch('budget_items', 'select=*&project_id=eq.' + projectId + '&order=created_at.asc');
+        budgetItemsCache = items || [];
         if (!items || items.length === 0) {
           tbody.innerHTML = '<tr><td colspan="7"><div class="no-reports">No budget items submitted yet.</div></td></tr>';
           return;
@@ -415,6 +418,38 @@
         lucide.createIcons();
       }
     }
+
+    // ── Budget CSV Export ──
+    var budgetItemsCache = [];
+    document.getElementById('export-budget-csv').addEventListener('click', function() {
+      if (budgetItemsCache.length === 0) return;
+      var headers = ['Item Name', 'Quantity', 'Unit', 'SRP Price', 'Declared Price', 'Variance', 'Status', 'Justification'];
+      var rows = budgetItemsCache.map(function(item) {
+        var srp = Number(item.srp_price);
+        var declared = Number(item.declared_price);
+        var variance = declared - srp;
+        var pct = srp > 0 ? ((variance / srp) * 100) : 0;
+        var isFlagged = pct > (FLAG_THRESHOLD * 100);
+        return [
+          '"' + (item.item_name || '').replace(/"/g, '""') + '"',
+          item.quantity || 1,
+          '"' + (item.unit || 'pc') + '"',
+          srp,
+          declared,
+          variance,
+          isFlagged ? 'Flagged (+' + pct.toFixed(0) + '%)' : 'Verified',
+          '"' + (item.justification || '').replace(/"/g, '""') + '"'
+        ].join(',');
+      });
+      var csv = [headers.join(',')].concat(rows).join('\n');
+      var blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url;
+      a.download = 'K-Trace_Budget_' + (projectId || 'unknown') + '_' + new Date().toISOString().slice(0,10) + '.csv';
+      a.click();
+      URL.revokeObjectURL(url);
+    });
 
     // ── Fetch Feedback (Reports & Verifications) ──
     async function fetchReportsAndVerifications() {

@@ -12,6 +12,7 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
   <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.6/dist/chart.umd.min.js"></script>
 </head>
 
 <body>
@@ -28,6 +29,7 @@
       <div class="nav-links">
         <a href="index.html" class="nav-pill active">Dashboard</a>
         <a href="#projects-section" class="nav-pill">Projects</a>
+        <a href="contractors.html" class="nav-pill">Contractors</a>
         <button class="theme-toggle" id="theme-toggle" aria-label="Toggle dark mode"><i data-lucide="moon"></i></button>
       </div>
     </nav>
@@ -64,6 +66,34 @@
         <span class="stat-value" id="stat-delayed">—</span>
       </div>
     </section>
+
+    <!-- Analytics Charts -->
+    <section class="analytics-section" id="analytics-section">
+      <div class="chart-card">
+        <h3 class="chart-card-title"><span class="inline-icon"><i data-lucide="pie-chart"></i></span> Budget by Status</h3>
+        <div class="chart-container"><canvas id="budget-chart"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <h3 class="chart-card-title"><span class="inline-icon"><i data-lucide="bar-chart-3"></i></span> Project Count by Status</h3>
+        <div class="chart-container"><canvas id="count-chart"></canvas></div>
+      </div>
+    </section>
+
+    <!-- Search & Sort -->
+    <div class="search-sort-bar">
+      <div class="search-input-wrapper">
+        <span class="search-icon"><i data-lucide="search"></i></span>
+        <input type="text" class="search-input" id="search-input" placeholder="Search projects by name, location, or contractor...">
+      </div>
+      <select class="sort-select" id="sort-select">
+        <option value="default">Sort: Default</option>
+        <option value="budget-high">Highest Budget</option>
+        <option value="budget-low">Lowest Budget</option>
+        <option value="name-az">Name: A–Z</option>
+        <option value="name-za">Name: Z–A</option>
+      </select>
+      <button class="export-btn" id="export-csv-btn"><i data-lucide="download"></i> Export CSV</button>
+    </div>
 
     <section class="filter-bar" id="category-filter-bar" style="margin-bottom: 10px;">
       <button class="filter-pill active" data-category="All"><span class="inline-icon"><i data-lucide="layers"></i></span> All Scopes</button>
@@ -166,6 +196,10 @@
     let activeStatus = 'All';
     let activeCategory = 'All';
     let activeView = 'grid'; // 'grid' or 'map'
+    let activeSearch = '';
+    let activeSort = 'default';
+    let budgetChart = null;
+    let countChart = null;
     let leafletMap = null;
     let markers = [];
 
@@ -234,6 +268,7 @@
 
     function applyFilters() {
       var filtered = [];
+      var q = activeSearch.toLowerCase();
       for (var i = 0; i < allProjects.length; i++) {
         var p = allProjects[i];
         var isBrgy = (p.department.toLowerCase().includes('brgy') || p.department.toLowerCase().includes('barangay'));
@@ -241,12 +276,26 @@
         
         var matchStatus = (activeStatus === 'All' || p.status === activeStatus);
         var matchCategory = (activeCategory === 'All' || pCat === activeCategory);
+        var matchSearch = !q || p.title.toLowerCase().includes(q) || (p.location || '').toLowerCase().includes(q) || (p.department || '').toLowerCase().includes(q) || (p.contractor || '').toLowerCase().includes(q);
         
-        if (matchStatus && matchCategory) {
+        if (matchStatus && matchCategory && matchSearch) {
           filtered.push(p);
         }
       }
+
+      // Sorting
+      if (activeSort === 'budget-high') {
+        filtered.sort(function(a, b) { return Number(b.total_budget) - Number(a.total_budget); });
+      } else if (activeSort === 'budget-low') {
+        filtered.sort(function(a, b) { return Number(a.total_budget) - Number(b.total_budget); });
+      } else if (activeSort === 'name-az') {
+        filtered.sort(function(a, b) { return a.title.localeCompare(b.title); });
+      } else if (activeSort === 'name-za') {
+        filtered.sort(function(a, b) { return b.title.localeCompare(a.title); });
+      }
+
       renderProjects(filtered);
+      updateCharts(filtered);
       if (activeView === 'map') {
         renderMap(filtered);
       }
@@ -293,6 +342,148 @@
         projectsGrid.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><div class="empty-state-icon"><i data-lucide="alert-circle" style="width:48px;height:48px;color:var(--flag-red)"></i></div><h3 class="empty-state-title">Connection Error</h3><p class="empty-state-text">' + err.message + '</p><button class="btn btn-primary btn-sm" onclick="fetchProjects()" style="margin-top:16px">Retry</button></div>';
         lucide.createIcons();
       }
+    }
+
+    // Search & Sort listeners
+    var searchInput = document.getElementById('search-input');
+    var sortSelect = document.getElementById('sort-select');
+    var searchTimeout;
+    searchInput.addEventListener('input', function() {
+      clearTimeout(searchTimeout);
+      searchTimeout = setTimeout(function() {
+        activeSearch = searchInput.value.trim();
+        applyFilters();
+      }, 250);
+    });
+    sortSelect.addEventListener('change', function() {
+      activeSort = sortSelect.value;
+      applyFilters();
+    });
+
+    // CSV Export
+    document.getElementById('export-csv-btn').addEventListener('click', function() {
+      exportProjectsCSV();
+    });
+
+    function exportProjectsCSV() {
+      var q = activeSearch.toLowerCase();
+      var filtered = allProjects.filter(function(p) {
+        var isBrgy = (p.department.toLowerCase().includes('brgy') || p.department.toLowerCase().includes('barangay'));
+        var pCat = isBrgy ? 'Barangay' : 'City';
+        var matchStatus = (activeStatus === 'All' || p.status === activeStatus);
+        var matchCategory = (activeCategory === 'All' || pCat === activeCategory);
+        var matchSearch = !q || p.title.toLowerCase().includes(q) || (p.location || '').toLowerCase().includes(q) || (p.department || '').toLowerCase().includes(q);
+        return matchStatus && matchCategory && matchSearch;
+      });
+
+      var headers = ['Project Name', 'Department', 'Status', 'Total Budget', 'Location', 'Contractor', 'Description'];
+      var rows = filtered.map(function(p) {
+        return [
+          '"' + (p.title || '').replace(/"/g, '""') + '"',
+          '"' + (p.department || '').replace(/"/g, '""') + '"',
+          p.status,
+          p.total_budget,
+          '"' + (p.location || '').replace(/"/g, '""') + '"',
+          '"' + (p.contractor || '').replace(/"/g, '""') + '"',
+          '"' + (p.description || '').replace(/"/g, '""') + '"'
+        ].join(',');
+      });
+
+      var csv = [headers.join(',')].concat(rows).join('\n');
+      var blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url;
+      a.download = 'K-Trace_Projects_' + new Date().toISOString().slice(0,10) + '.csv';
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    // Chart.js rendering
+    function updateCharts(projects) {
+      var statusColors = { Pending: '#F59E0B', Ongoing: '#3B82F6', Completed: '#10B981', Delayed: '#EF4444' };
+      var statuses = ['Pending', 'Ongoing', 'Completed', 'Delayed'];
+      var budgets = [0, 0, 0, 0];
+      var counts = [0, 0, 0, 0];
+
+      for (var i = 0; i < projects.length; i++) {
+        var idx = statuses.indexOf(projects[i].status);
+        if (idx >= 0) {
+          budgets[idx] += Number(projects[i].total_budget);
+          counts[idx]++;
+        }
+      }
+
+      var colors = statuses.map(function(s) { return statusColors[s]; });
+
+      var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      var textColor = isDark ? '#E5E7EB' : '#374151';
+
+      // Budget Doughnut
+      var budgetCtx = document.getElementById('budget-chart').getContext('2d');
+      if (budgetChart) budgetChart.destroy();
+      budgetChart = new Chart(budgetCtx, {
+        type: 'doughnut',
+        data: {
+          labels: statuses,
+          datasets: [{
+            data: budgets,
+            backgroundColor: colors,
+            borderWidth: 0,
+            hoverOffset: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          cutout: '65%',
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: { color: textColor, padding: 16, usePointStyle: true, pointStyleWidth: 10, font: { size: 12, family: "'Inter', sans-serif" } }
+            },
+            tooltip: {
+              callbacks: {
+                label: function(ctx) {
+                  return ctx.label + ': ₱' + ctx.parsed.toLocaleString('en-PH');
+                }
+              }
+            }
+          }
+        }
+      });
+
+      // Count Bar Chart
+      var countCtx = document.getElementById('count-chart').getContext('2d');
+      if (countChart) countChart.destroy();
+      countChart = new Chart(countCtx, {
+        type: 'bar',
+        data: {
+          labels: statuses,
+          datasets: [{
+            data: counts,
+            backgroundColor: colors,
+            borderRadius: 8,
+            barThickness: 36
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: { display: false }
+          },
+          scales: {
+            x: {
+              grid: { display: false },
+              ticks: { color: textColor, font: { size: 12, family: "'Inter', sans-serif" } }
+            },
+            y: {
+              beginAtZero: true,
+              ticks: { color: textColor, stepSize: 1, font: { size: 12 } },
+              grid: { color: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)' }
+            }
+          }
+        }
+      });
     }
 
     fetchProjects();

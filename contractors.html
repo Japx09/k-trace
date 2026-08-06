@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description"
+    content="K-Trace Contractor Leaderboard — See which contractors handle the most projects, largest budgets, and delays.">
+  <title>K-Trace — Contractor Leaderboard</title>
+  <link rel="icon" type="image/png" href="https://kabankalancity.gov.ph/wp-content/uploads/2023/09/Kabankalan_City_seal.svg_.png">
+  <link rel="stylesheet" href="style.css">
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+
+<body>
+
+  <div class="app-container">
+    <nav class="top-bar" id="top-bar">
+      <a href="index.html" class="brand">
+        <img src="https://kabankalancity.gov.ph/wp-content/uploads/2023/09/Kabankalan_City_seal.svg_.png" alt="Kabankalan City Seal" class="brand-icon">
+        <div class="brand-text">
+          <span class="brand-name">K-Trace</span>
+          <span class="brand-tagline">Kabankalan Transparency</span>
+        </div>
+      </a>
+      <div class="nav-links">
+        <a href="index.html" class="nav-pill">Dashboard</a>
+        <a href="contractors.html" class="nav-pill active">Contractors</a>
+        <button class="theme-toggle" id="theme-toggle" aria-label="Toggle dark mode"><i data-lucide="moon"></i></button>
+      </div>
+    </nav>
+
+    <header class="page-header">
+      <h1><span class="inline-icon"><i data-lucide="hard-hat" style="width:32px;height:32px"></i></span> Contractor Leaderboard</h1>
+      <p>Transparency in action — see which contractors handle city and barangay projects.</p>
+    </header>
+
+    <!-- Stats Row -->
+    <section class="stats-row" id="contractor-stats-row">
+      <div class="stat-card">
+        <div class="stat-icon budget"><i data-lucide="building"></i></div>
+        <span class="stat-label">Total Contractors</span>
+        <span class="stat-value" id="stat-total-contractors">—</span>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon ongoing"><i data-lucide="briefcase"></i></div>
+        <span class="stat-label">Total Projects</span>
+        <span class="stat-value" id="stat-total-projects">—</span>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon" style="background:#FEE2E2; color:#991B1B"><i data-lucide="alert-triangle"></i></div>
+        <span class="stat-label">Total Delayed</span>
+        <span class="stat-value" id="stat-total-delayed">—</span>
+      </div>
+    </section>
+
+    <!-- Sort Controls -->
+    <div class="search-sort-bar">
+      <div class="search-input-wrapper">
+        <span class="search-icon"><i data-lucide="search"></i></span>
+        <input type="text" class="search-input" id="search-input" placeholder="Search contractors...">
+      </div>
+      <select class="sort-select" id="sort-select">
+        <option value="delayed-desc">Most Delayed</option>
+        <option value="budget-desc">Highest Budget</option>
+        <option value="projects-desc">Most Projects</option>
+        <option value="name-asc">Name: A–Z</option>
+      </select>
+      <button class="export-btn" id="export-csv-btn"><i data-lucide="download"></i> Export CSV</button>
+    </div>
+
+    <!-- Leaderboard Grid -->
+    <div class="leaderboard-grid" id="leaderboard-grid">
+      <div class="skeleton skeleton-card"></div>
+      <div class="skeleton skeleton-card"></div>
+      <div class="skeleton skeleton-card"></div>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-brand">
+      <img src="https://kabankalancity.gov.ph/wp-content/uploads/2023/09/Kabankalan_City_seal.svg_.png" alt="">
+      <span>K-Trace</span>
+    </div>
+    <p class="footer-text">
+      Built for Kabankalan City &mdash; Empowering citizens through radical transparency.<br>
+      Track every peso. Every project. Every receipt.
+    </p>
+    <p class="footer-disclaimer" style="font-size: var(--font-size-xs); color: var(--text-tertiary); margin: var(--space-md) auto 0; max-width: 600px; line-height: 1.5; text-align: center;">
+      <strong>Disclaimer:</strong> This web application was created by a Kabankalanon to showcase technology for transparency. All data shown is dummy data and does not represent official government records.
+    </p>
+    <div class="footer-links">
+      <a href="index.html">Dashboard</a>
+      <a href="contractors.html">Contractors</a>
+      <a href="https://kabankalancity.gov.ph" target="_blank" rel="noopener">City Website</a>
+    </div>
+  </footer>
+
+  <div class="toast-container" id="toast-container"></div>
+
+  <script>
+    const SUPABASE_URL = 'https://aknvhyezfkfjglpfkjdi.supabase.co';
+    const SUPABASE_KEY = 'sb_publishable_gqv6WXEo8cVvIVwrLLXuzQ_lqmfSCC6';
+
+    async function supabaseFetch(table, query) {
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}?${query}`, {
+        headers: {
+          'apikey': SUPABASE_KEY,
+          'Authorization': 'Bearer ' + SUPABASE_KEY
+        }
+      });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      return res.json();
+    }
+
+    function formatPeso(amount) {
+      return '₱' + Number(amount).toLocaleString('en-PH', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+    }
+
+    let allContractors = [];
+    let activeSearch = '';
+    let activeSort = 'delayed-desc';
+
+    const grid = document.getElementById('leaderboard-grid');
+    const searchInput = document.getElementById('search-input');
+    const sortSelect = document.getElementById('sort-select');
+
+    function aggregateContractors(projects) {
+      var map = {};
+      for (var i = 0; i < projects.length; i++) {
+        var p = projects[i];
+        var name = p.contractor || 'Unknown Contractor';
+        if (!map[name]) {
+          map[name] = { name: name, projects: [], totalBudget: 0, delayedCount: 0 };
+        }
+        map[name].projects.push(p);
+        map[name].totalBudget += Number(p.total_budget);
+        if (p.status === 'Delayed') map[name].delayedCount++;
+      }
+      return Object.values(map);
+    }
+
+    function renderLeaderboard(contractors) {
+      if (contractors.length === 0) {
+        grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><div class="empty-state-icon"><i data-lucide="search-x" style="width:48px;height:48px;color:var(--text-tertiary)"></i></div><h3 class="empty-state-title">No contractors found</h3><p class="empty-state-text">Try a different search query.</p></div>';
+        lucide.createIcons();
+        return;
+      }
+
+      var html = '';
+      for (var i = 0; i < contractors.length; i++) {
+        var c = contractors[i];
+        var delayClass = c.delayedCount > 0 ? 'danger' : '';
+
+        html += '<div class="contractor-card" style="animation-delay: ' + (i * 60) + 'ms">';
+        html += '<div style="display:flex;align-items:center">';
+        html += '<span class="contractor-rank">' + (i + 1) + '</span>';
+        html += '<div>';
+        html += '<div class="contractor-name">' + c.name + '</div>';
+        html += '</div>';
+        html += '</div>';
+
+        html += '<div class="contractor-stats">';
+        html += '<div class="contractor-stat"><div class="contractor-stat-value">' + c.projects.length + '</div><div class="contractor-stat-label">Projects</div></div>';
+        html += '<div class="contractor-stat"><div class="contractor-stat-value">' + formatPeso(c.totalBudget) + '</div><div class="contractor-stat-label">Total Budget</div></div>';
+        html += '<div class="contractor-stat"><div class="contractor-stat-value ' + delayClass + '">' + c.delayedCount + '</div><div class="contractor-stat-label">Delayed</div></div>';
+        html += '</div>';
+
+        // List projects
+        html += '<div class="contractor-projects-list">';
+        for (var j = 0; j < c.projects.length; j++) {
+          var proj = c.projects[j];
+          var statusClass = proj.status.toLowerCase();
+          html += '<a href="project-details.html?id=' + proj.id + '" class="contractor-project-item" style="text-decoration:none;color:inherit">';
+          html += '<span>' + proj.title + '</span>';
+          html += '<span class="status-badge ' + statusClass + '" style="font-size:10px;padding:3px 10px">' + proj.status + '</span>';
+          html += '</a>';
+        }
+        html += '</div>';
+
+        html += '</div>';
+      }
+      grid.innerHTML = html;
+      lucide.createIcons();
+    }
+
+    function applyFiltersAndSort() {
+      var q = activeSearch.toLowerCase();
+      var filtered = allContractors.filter(function(c) {
+        return !q || c.name.toLowerCase().includes(q);
+      });
+
+      if (activeSort === 'delayed-desc') {
+        filtered.sort(function(a, b) { return b.delayedCount - a.delayedCount; });
+      } else if (activeSort === 'budget-desc') {
+        filtered.sort(function(a, b) { return b.totalBudget - a.totalBudget; });
+      } else if (activeSort === 'projects-desc') {
+        filtered.sort(function(a, b) { return b.projects.length - a.projects.length; });
+      } else if (activeSort === 'name-asc') {
+        filtered.sort(function(a, b) { return a.name.localeCompare(b.name); });
+      }
+
+      renderLeaderboard(filtered);
+    }
+
+    // Event listeners
+    var searchTimeout;
+    searchInput.addEventListener('input', function() {
+      clearTimeout(searchTimeout);
+      searchTimeout = setTimeout(function() {
+        activeSearch = searchInput.value.trim();
+        applyFiltersAndSort();
+      }, 250);
+    });
+
+    sortSelect.addEventListener('change', function() {
+      activeSort = sortSelect.value;
+      applyFiltersAndSort();
+    });
+
+    // CSV Export
+    document.getElementById('export-csv-btn').addEventListener('click', function() {
+      var headers = ['Contractor', 'Total Projects', 'Total Budget', 'Delayed Projects'];
+      var rows = allContractors.map(function(c) {
+        return [
+          '"' + c.name.replace(/"/g, '""') + '"',
+          c.projects.length,
+          c.totalBudget,
+          c.delayedCount
+        ].join(',');
+      });
+      var csv = [headers.join(',')].concat(rows).join('\n');
+      var blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url;
+      a.download = 'K-Trace_Contractors_' + new Date().toISOString().slice(0,10) + '.csv';
+      a.click();
+      URL.revokeObjectURL(url);
+    });
+
+    // Fetch & init
+    async function init() {
+      try {
+        var projects = await supabaseFetch('projects', 'select=*&order=created_at.desc');
+        allContractors = aggregateContractors(projects || []);
+
+        // Stats
+        var totalDelayed = 0;
+        allContractors.forEach(function(c) { totalDelayed += c.delayedCount; });
+        document.getElementById('stat-total-contractors').textContent = allContractors.length;
+        document.getElementById('stat-total-projects').textContent = (projects || []).length;
+        document.getElementById('stat-total-delayed').textContent = totalDelayed;
+
+        applyFiltersAndSort();
+      } catch (err) {
+        grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><div class="empty-state-icon"><i data-lucide="alert-circle" style="width:48px;height:48px;color:var(--flag-red)"></i></div><h3 class="empty-state-title">Connection Error</h3><p class="empty-state-text">' + err.message + '</p></div>';
+        lucide.createIcons();
+      }
+    }
+
+    init();
+
+    // Initialize Lucide icons
+    lucide.createIcons();
+
+    // ── Dark Mode Toggle ──
+    const themeToggle = document.getElementById('theme-toggle');
+    const savedTheme = localStorage.getItem('k-trace-theme');
+    if (savedTheme === 'dark') {
+      document.documentElement.setAttribute('data-theme', 'dark');
+    }
+    themeToggle.addEventListener('click', () => {
+      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      if (isDark) {
+        document.documentElement.removeAttribute('data-theme');
+        localStorage.setItem('k-trace-theme', 'light');
+      } else {
+        document.documentElement.setAttribute('data-theme', 'dark');
+        localStorage.setItem('k-trace-theme', 'dark');
+      }
+      themeToggle.innerHTML = isDark ? '<i data-lucide="moon"></i>' : '<i data-lucide="sun"></i>';
+      lucide.createIcons();
+    });
+    if (savedTheme === 'dark') {
+      themeToggle.innerHTML = '<i data-lucide="sun"></i>';
+      lucide.createIcons();
+    }
+  </script>
+</body>
+
+</html>

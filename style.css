@@ -2140,6 +2140,9 @@ button {
   border: 1px solid var(--border-light);
   padding: var(--space-lg);
   box-shadow: var(--shadow-card);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 }
 
 .chart-card-title {
@@ -2160,8 +2163,10 @@ button {
 .chart-container {
   position: relative;
   width: 100%;
-  max-width: 300px;
-  margin: 0 auto;
+  max-height: 280px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 /* ── Export Button ── */

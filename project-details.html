@@ -23,11 +23,12 @@
       <div class="nav-links">
         <a href="index.html" class="nav-pill">Dashboard</a>
         <a href="#" class="nav-pill active">Project Details</a>
+        <button class="theme-toggle" id="theme-toggle" aria-label="Toggle dark mode"><i data-lucide="moon"></i></button>
       </div>
     </nav>
 
     <section class="detail-header" id="detail-header">
-      <a href="index.html" class="detail-back">← Back to Dashboard</a>
+      <a href="index.html" class="detail-back"><i data-lucide="arrow-left" style="width:14px;height:14px"></i> Back to Dashboard</a>
       <div id="header-skeleton">
         <div class="skeleton" style="height:32px;width:60%;margin-bottom:12px;border-radius:8px"></div>
         <div class="skeleton" style="height:18px;width:40%;margin-bottom:20px;border-radius:6px"></div>
@@ -82,7 +83,7 @@
     <section>
       <div class="section-header">
         <div>
-          <h2 class="section-title">📦 Itemized Budget</h2>
+          <h2 class="section-title"><span class="inline-icon"><i data-lucide="receipt"></i></span> Itemized Budget</h2>
           <p class="section-subtitle">Each item is verified against the Standard Retail Price (SRP).</p>
         </div>
       </div>
@@ -111,7 +112,7 @@
     <section>
       <div class="section-header" style="flex-wrap: wrap; gap: 15px;">
         <div>
-          <h2 class="section-title">🗣️ Citizen Feedback</h2>
+          <h2 class="section-title"><span class="inline-icon"><i data-lucide="users"></i></span> Citizen Feedback</h2>
           <p class="section-subtitle">Public reports and verifications from citizens.</p>
         </div>
         <div style="display: flex; gap: 10px; flex-wrap: wrap;">
@@ -128,8 +129,8 @@
   <!-- Report Modal -->
   <dialog class="modal-dialog" id="report-modal" aria-labelledby="modal-title">
     <div class="modal-header">
-      <h2 class="modal-title" id="modal-title">🚩 Report a Mismatch</h2>
-      <button class="modal-close" id="modal-close-btn" aria-label="Close">✕</button>
+      <h2 class="modal-title" id="modal-title"><span class="inline-icon"><i data-lucide="flag" style="color:var(--flag-red)"></i></span> Report a Mismatch</h2>
+      <button class="modal-close" id="modal-close-btn" aria-label="Close"><i data-lucide="x" style="width:18px;height:18px"></i></button>
     </div>
     <form id="report-form">
       <div class="modal-body">
@@ -146,7 +147,12 @@
         </div>
         <div class="form-group">
           <label class="form-label" for="citizen-proof">Photo Evidence <span class="optional">(optional)</span></label>
-          <input class="form-input" type="file" id="citizen-proof" accept="image/*">
+          <div class="file-upload-area">
+            <input type="file" id="citizen-proof" accept="image/*">
+            <div class="file-upload-icon"><i data-lucide="upload"></i></div>
+            <p class="file-upload-text"><strong>Click to upload</strong> or drag and drop</p>
+            <p class="file-upload-hint">PNG, JPG up to 5MB</p>
+          </div>
         </div>
       </div>
       <div class="modal-footer">
@@ -159,8 +165,8 @@
   <!-- Verify Modal -->
   <dialog class="modal-dialog" id="verify-modal" aria-labelledby="verify-modal-title">
     <div class="modal-header">
-      <h2 class="modal-title" id="verify-modal-title" style="color: #047857;">✅ Verify this Project</h2>
-      <button class="modal-close" id="verify-modal-close-btn" aria-label="Close">✕</button>
+      <h2 class="modal-title" id="verify-modal-title" style="color: #047857;"><span class="inline-icon"><i data-lucide="shield-check" style="color:#047857"></i></span> Verify this Project</h2>
+      <button class="modal-close" id="verify-modal-close-btn" aria-label="Close"><i data-lucide="x" style="width:18px;height:18px"></i></button>
     </div>
     <form id="verify-form">
       <div class="modal-body">
@@ -177,7 +183,12 @@
         </div>
         <div class="form-group">
           <label class="form-label" for="verify-proof">Photo Proof <span class="optional">(optional)</span></label>
-          <input class="form-input" type="file" id="verify-proof" accept="image/*">
+          <div class="file-upload-area">
+            <input type="file" id="verify-proof" accept="image/*">
+            <div class="file-upload-icon"><i data-lucide="upload"></i></div>
+            <p class="file-upload-text"><strong>Click to upload</strong> or drag and drop</p>
+            <p class="file-upload-hint">PNG, JPG up to 5MB</p>
+          </div>
         </div>
       </div>
       <div class="modal-footer">
@@ -190,8 +201,8 @@
   <!-- Contractor History Modal -->
   <dialog class="modal-dialog" id="contractor-modal" aria-labelledby="contractor-modal-title" style="max-width: 600px;">
     <div class="modal-header">
-      <h2 class="modal-title" id="contractor-modal-title">🏢 Contractor History</h2>
-      <button class="modal-close" id="contractor-modal-close-btn" aria-label="Close">✕</button>
+      <h2 class="modal-title" id="contractor-modal-title"><span class="inline-icon"><i data-lucide="building"></i></span> Contractor History</h2>
+      <button class="modal-close" id="contractor-modal-close-btn" aria-label="Close"><i data-lucide="x" style="width:18px;height:18px"></i></button>
     </div>
     <div class="modal-body">
       <p style="font-size:var(--font-size-sm);color:var(--text-secondary);margin-bottom:var(--space-md);line-height:1.6">
@@ -287,7 +298,7 @@
       var c = document.getElementById('toast-container');
       var t = document.createElement('div');
       t.className = 'toast ' + (type || 'success');
-      t.innerHTML = '<span>' + (type === 'error' ? '✕' : '✓') + '</span> ' + msg;
+      t.innerHTML = '<span>' + (type === 'error' ? '<i data-lucide="x" style="width:14px;height:14px"></i>' : '<i data-lucide="check" style="width:14px;height:14px"></i>') + '</span> ' + msg;
       c.appendChild(t);
       setTimeout(function() { t.remove(); }, 4000);
     }
@@ -305,7 +316,8 @@
           if (projects && projects.length > 0) {
             projectId = projects[0].id;
           } else {
-             document.getElementById('header-skeleton').innerHTML = '<div class="empty-state"><div class="empty-state-icon">❓</div><h3 class="empty-state-title">No Projects Found</h3><p class="empty-state-text"><a href="index.html" style="color:var(--accent);font-weight:600">Return to Dashboard</a></p></div>';
+             document.getElementById('header-skeleton').innerHTML = '<div class="empty-state"><div class="empty-state-icon"><i data-lucide="search-x" style="width:48px;height:48px;color:var(--text-tertiary)"></i></div><h3 class="empty-state-title">No Projects Found</h3><p class="empty-state-text"><a href="index.html" style="color:var(--accent);font-weight:600">Return to Dashboard</a></p></div>';
+             lucide.createIcons();
              return;
           }
         } else {
@@ -334,7 +346,8 @@
         document.getElementById('header-content').style.display = 'block';
         lucide.createIcons();
       } catch (err) {
-        document.getElementById('header-skeleton').innerHTML = '<div class="empty-state"><div class="empty-state-icon">⚠️</div><h3 class="empty-state-title">Project Not Found</h3><p class="empty-state-text">' + err.message + ' <a href="index.html" style="color:var(--accent);font-weight:600">Return</a></p></div>';
+        document.getElementById('header-skeleton').innerHTML = '<div class="empty-state"><div class="empty-state-icon"><i data-lucide="alert-circle" style="width:48px;height:48px;color:var(--flag-red)"></i></div><h3 class="empty-state-title">Project Not Found</h3><p class="empty-state-text">' + err.message + ' <a href="index.html" style="color:var(--accent);font-weight:600">Return</a></p></div>';
+        lucide.createIcons();
       }
     }
 
@@ -368,14 +381,14 @@
           var rowClass = isFlagged ? 'flagged' : (variance === 0 ? 'verified' : '');
           var priceClass = isFlagged ? 'over' : 'match';
           var flagLabel = isFlagged
-            ? '<span class="flag-indicator over">⚠ Flagged (+' + pct.toFixed(0) + '%)</span>'
-            : '<span class="flag-indicator match">✓ Verified</span>';
+            ? '<span class="flag-indicator over"><i data-lucide="alert-triangle" style="width:12px;height:12px"></i> Flagged (+' + pct.toFixed(0) + '%)</span>'
+            : '<span class="flag-indicator match"><i data-lucide="check" style="width:12px;height:12px"></i> Verified</span>';
 
           var justification = '';
           if (isFlagged && item.justification) {
-            justification = '<div class="justification-text">💬 <strong>Justification:</strong> ' + item.justification + '</div>';
+            justification = '<div class="justification-text"><span class="inline-icon"><i data-lucide="message-square" style="width:12px;height:12px"></i></span> <strong>Justification:</strong> ' + item.justification + '</div>';
           } else if (isFlagged && !item.justification) {
-            justification = '<div class="justification-text" style="background:#FEE2E2;border-left-color:var(--flag-red)">⚠️ <strong>No justification provided</strong></div>';
+            justification = '<div class="justification-text" style="background:#FEE2E2;border-left-color:var(--flag-red)"><span class="inline-icon"><i data-lucide="alert-circle" style="width:12px;height:12px"></i></span> <strong>No justification provided</strong></div>';
           }
 
           html += '<tr class="' + rowClass + '">';
@@ -398,7 +411,8 @@
         document.getElementById('summary-flagged').textContent = flaggedCount + ' item' + (flaggedCount !== 1 ? 's' : '');
         document.getElementById('budget-summary').style.display = 'grid';
       } catch (err) {
-        tbody.innerHTML = '<tr><td colspan="7"><div class="no-reports" style="color:var(--flag-red)">⚠️ Failed to load budget items: ' + err.message + '</div></td></tr>';
+        tbody.innerHTML = '<tr><td colspan="7"><div class="no-reports" style="color:var(--flag-red)"><i data-lucide="alert-circle" style="width:16px;height:16px;vertical-align:middle"></i> Failed to load budget items: ' + err.message + '</div></td></tr>';
+        lucide.createIcons();
       }
     }
 
@@ -456,7 +470,7 @@
         for (var i = 0; i < allFeedback.length; i++) {
           var f = allFeedback[i];
           var isReport = f.type === 'report';
-          var icon = isReport ? '🚩' : '✅';
+          var icon = isReport ? '<i data-lucide="flag" style="width:14px;height:14px"></i>' : '<i data-lucide="check-circle" style="width:14px;height:14px"></i>';
           var authorColor = isReport ? 'var(--flag-red)' : '#10B981';
 
           html += '<div class="report-card" style="border-left: 4px solid ' + authorColor + '">';
@@ -464,7 +478,7 @@
           html += '<span class="report-date">' + relativeTime(f.created_at) + '</span></div>';
           html += '<p class="report-comment">' + (f.comment || '(No comment provided)') + '</p>';
           if (f.proof_image_url) {
-            html += '<a href="' + f.proof_image_url + '" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:4px;margin-top:12px;font-size:var(--font-size-xs);font-weight:600;color:var(--accent)">📎 View evidence</a>';
+            html += '<a href="' + f.proof_image_url + '" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:4px;margin-top:12px;font-size:var(--font-size-xs);font-weight:600;color:var(--accent)"><i data-lucide="paperclip" style="width:12px;height:12px"></i> View evidence</a>';
           }
           html += '</div>';
         }
@@ -605,7 +619,43 @@
       await fetchProjectDetails();
       await fetchBudgetItems();
       await fetchReportsAndVerifications();
+      lucide.createIcons();
     })();
+
+    // ── Dark Mode Toggle ──
+    const themeToggle = document.getElementById('theme-toggle');
+    const savedTheme = localStorage.getItem('k-trace-theme');
+    if (savedTheme === 'dark') {
+      document.documentElement.setAttribute('data-theme', 'dark');
+    }
+    themeToggle.addEventListener('click', () => {
+      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      if (isDark) {
+        document.documentElement.removeAttribute('data-theme');
+        localStorage.setItem('k-trace-theme', 'light');
+      } else {
+        document.documentElement.setAttribute('data-theme', 'dark');
+        localStorage.setItem('k-trace-theme', 'dark');
+      }
+      themeToggle.innerHTML = isDark ? '<i data-lucide="moon"></i>' : '<i data-lucide="sun"></i>';
+      lucide.createIcons();
+    });
+    if (savedTheme === 'dark') {
+      themeToggle.innerHTML = '<i data-lucide="sun"></i>';
+      lucide.createIcons();
+    }
   </script>
+
+  <footer class="site-footer">
+    <div class="footer-brand">
+      <img src="https://kabankalancity.gov.ph/wp-content/uploads/2023/09/Kabankalan_City_seal.svg_.png" alt="">
+      <span>K-Trace</span>
+    </div>
+    <p class="footer-text">Built for Kabankalan City &mdash; Empowering citizens through radical transparency.<br>Track every peso. Every project. Every receipt.</p>
+    <div class="footer-links">
+      <a href="index.html">Dashboard</a>
+      <a href="https://kabankalancity.gov.ph" target="_blank" rel="noopener">City Website</a>
+    </div>
+  </footer>
 </body>
 </html>

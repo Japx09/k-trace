@@ -28,6 +28,7 @@
       <div class="nav-links">
         <a href="index.html" class="nav-pill active">Dashboard</a>
         <a href="#projects-section" class="nav-pill">Projects</a>
+        <button class="theme-toggle" id="theme-toggle" aria-label="Toggle dark mode"><i data-lucide="moon"></i></button>
       </div>
     </nav>
 
@@ -65,17 +66,17 @@
     </section>
 
     <section class="filter-bar" id="category-filter-bar" style="margin-bottom: 10px;">
-      <button class="filter-pill active" data-category="All">🏢 All Scopes</button>
-      <button class="filter-pill" data-category="City">🏙️ City Level</button>
-      <button class="filter-pill" data-category="Barangay">🏘️ Barangay Level</button>
+      <button class="filter-pill active" data-category="All"><span class="inline-icon"><i data-lucide="layers"></i></span> All Scopes</button>
+      <button class="filter-pill" data-category="City"><span class="inline-icon"><i data-lucide="building-2"></i></span> City Level</button>
+      <button class="filter-pill" data-category="Barangay"><span class="inline-icon"><i data-lucide="home"></i></span> Barangay Level</button>
     </section>
 
     <section class="filter-bar" id="status-filter-bar">
       <button class="filter-pill active" data-status="All">All Statuses</button>
-      <button class="filter-pill" data-status="Pending">⏳ Pending</button>
-      <button class="filter-pill" data-status="Ongoing">🔨 Ongoing</button>
-      <button class="filter-pill" data-status="Completed">✅ Completed</button>
-      <button class="filter-pill" data-status="Delayed">🚨 Delayed</button>
+      <button class="filter-pill" data-status="Pending"><span class="inline-icon"><i data-lucide="clock"></i></span> Pending</button>
+      <button class="filter-pill" data-status="Ongoing"><span class="inline-icon"><i data-lucide="hammer"></i></span> Ongoing</button>
+      <button class="filter-pill" data-status="Completed"><span class="inline-icon"><i data-lucide="check-circle-2"></i></span> Completed</button>
+      <button class="filter-pill" data-status="Delayed"><span class="inline-icon"><i data-lucide="alert-triangle"></i></span> Delayed</button>
     </section>
 
     <div class="view-toggle-container">
@@ -94,6 +95,19 @@
       <div id="map-container" style="display: none;"></div>
     </section>
   </div>
+
+  <footer class="site-footer">
+    <div class="footer-brand">
+      <img src="https://kabankalancity.gov.ph/wp-content/uploads/2023/09/Kabankalan_City_seal.svg_.png" alt="">
+      <span>K-Trace</span>
+    </div>
+    <p class="footer-text">Built for Kabankalan City &mdash; Empowering citizens through radical transparency.<br>Track every peso. Every project. Every receipt.</p>
+    <div class="footer-links">
+      <a href="index.html">Dashboard</a>
+      <a href="#projects-section">Projects</a>
+      <a href="https://kabankalancity.gov.ph" target="_blank" rel="noopener">City Website</a>
+    </div>
+  </footer>
 
   <div class="toast-container" id="toast-container"></div>
 
@@ -165,14 +179,15 @@
 
     function renderProjects(projects) {
       if (projects.length === 0) {
-        projectsGrid.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><div class="empty-state-icon">📋</div><h3 class="empty-state-title">No projects found</h3><p class="empty-state-text">No projects match your filter.</p></div>';
+        projectsGrid.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><div class="empty-state-icon"><i data-lucide="clipboard-list" style="width:48px;height:48px;color:var(--text-tertiary)"></i></div><h3 class="empty-state-title">No projects found</h3><p class="empty-state-text">No projects match your filter.</p></div>';
+        lucide.createIcons();
         return;
       }
       var html = '';
       for (var i = 0; i < projects.length; i++) {
         var p = projects[i];
         var isBrgy = (p.department.toLowerCase().includes('brgy') || p.department.toLowerCase().includes('barangay'));
-        var catBadge = isBrgy ? '<span class="status-badge" style="background:var(--card-bg);color:var(--text);border:1px solid var(--border)">🏘️ Barangay</span>' : '<span class="status-badge" style="background:var(--card-bg);color:var(--text);border:1px solid var(--border)">🏙️ City</span>';
+        var catBadge = isBrgy ? '<span class="status-badge" style="background:var(--bg-card);color:var(--text-primary);border:1px solid var(--border-light)"><span class="inline-icon"><i data-lucide="home"></i></span> Barangay</span>' : '<span class="status-badge" style="background:var(--bg-card);color:var(--text-primary);border:1px solid var(--border-light)"><span class="inline-icon"><i data-lucide="building-2"></i></span> City</span>';
         
         html += '<a href="project-details.html?id=' + p.id + '" class="project-card">';
         html += '<div class="project-card-header"><div>';
@@ -183,10 +198,16 @@
         html += '<div class="project-card-footer"><div>';
         html += '<div class="project-budget">' + formatPeso(p.total_budget) + '</div>';
         html += '<div class="project-budget-label">Total Budget</div>';
-        html += '</div><div class="project-location"><span>📍</span> ' + (p.location || 'TBD') + '</div>';
+        html += '</div><div class="project-location"><span class="inline-icon"><i data-lucide="map-pin"></i></span> ' + (p.location || 'TBD') + '</div>';
         html += '</div></a>';
       }
       projectsGrid.innerHTML = html;
+      lucide.createIcons();
+      // Stagger fade-in
+      var cards = projectsGrid.querySelectorAll('.project-card');
+      cards.forEach(function(card, i) {
+        setTimeout(function() { card.classList.add('visible'); }, i * 80);
+      });
     }
 
     function updateStats(projects) {
@@ -263,7 +284,8 @@
         updateStats(allProjects);
         applyFilters(); // Renders based on activeView
       } catch (err) {
-        projectsGrid.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><div class="empty-state-icon">⚠️</div><h3 class="empty-state-title">Connection Error</h3><p class="empty-state-text">' + err.message + '</p><button class="btn btn-primary btn-sm" onclick="fetchProjects()" style="margin-top:16px">Retry</button></div>';
+        projectsGrid.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><div class="empty-state-icon"><i data-lucide="alert-circle" style="width:48px;height:48px;color:var(--flag-red)"></i></div><h3 class="empty-state-title">Connection Error</h3><p class="empty-state-text">' + err.message + '</p><button class="btn btn-primary btn-sm" onclick="fetchProjects()" style="margin-top:16px">Retry</button></div>';
+        lucide.createIcons();
       }
     }
 
@@ -429,6 +451,68 @@
 
     // Initialize Lucide icons
     lucide.createIcons();
+
+    // ── Dark Mode Toggle ──
+    const themeToggle = document.getElementById('theme-toggle');
+    const savedTheme = localStorage.getItem('k-trace-theme');
+    if (savedTheme === 'dark') {
+      document.documentElement.setAttribute('data-theme', 'dark');
+    }
+    themeToggle.addEventListener('click', () => {
+      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      if (isDark) {
+        document.documentElement.removeAttribute('data-theme');
+        localStorage.setItem('k-trace-theme', 'light');
+      } else {
+        document.documentElement.setAttribute('data-theme', 'dark');
+        localStorage.setItem('k-trace-theme', 'dark');
+      }
+      // Re-render icon
+      themeToggle.innerHTML = isDark ? '<i data-lucide="moon"></i>' : '<i data-lucide="sun"></i>';
+      lucide.createIcons();
+    });
+    // Set initial icon
+    if (savedTheme === 'dark') {
+      themeToggle.innerHTML = '<i data-lucide="sun"></i>';
+      lucide.createIcons();
+    }
+
+    // ── Animated Counter ──
+    function countUp(el, target, prefix, suffix) {
+      prefix = prefix || '';
+      suffix = suffix || '';
+      var start = 0;
+      var duration = 800;
+      var startTime = null;
+      function step(timestamp) {
+        if (!startTime) startTime = timestamp;
+        var progress = Math.min((timestamp - startTime) / duration, 1);
+        var eased = 1 - Math.pow(1 - progress, 3); // easeOutCubic
+        var current = Math.floor(eased * target);
+        el.textContent = prefix + current.toLocaleString('en-PH') + suffix;
+        if (progress < 1) requestAnimationFrame(step);
+        else el.textContent = prefix + target.toLocaleString('en-PH') + suffix;
+      }
+      requestAnimationFrame(step);
+    }
+
+    // Override updateStats to use counters
+    var origUpdateStats = updateStats;
+    updateStats = function(projects) {
+      var total = 0, pending = 0, ongoing = 0, completed = 0, delayed = 0;
+      for (var i = 0; i < projects.length; i++) {
+        total += Number(projects[i].total_budget);
+        if (projects[i].status === 'Pending') pending++;
+        if (projects[i].status === 'Ongoing') ongoing++;
+        if (projects[i].status === 'Completed') completed++;
+        if (projects[i].status === 'Delayed') delayed++;
+      }
+      countUp(document.getElementById('stat-total-budget'), Math.round(total), '₱');
+      countUp(document.getElementById('stat-pending'), pending);
+      countUp(document.getElementById('stat-ongoing'), ongoing);
+      countUp(document.getElementById('stat-completed'), completed);
+      countUp(document.getElementById('stat-delayed'), delayed);
+    };
   </script>
 </body>
 

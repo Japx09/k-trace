@@ -668,6 +668,10 @@
       // Re-render icon
       themeToggle.innerHTML = isDark ? '<i data-lucide="moon"></i>' : '<i data-lucide="sun"></i>';
       lucide.createIcons();
+      // Re-render charts to update text colors for the new theme
+      if (allProjects.length > 0) {
+        applyFilters(); 
+      }
     });
     // Set initial icon
     if (savedTheme === 'dark') {

@@ -39,39 +39,55 @@
       <p>Track every peso. Every project. Every receipt. Transparency starts&nbsp;here.</p>
     </header>
 
+    <!-- ═══ V5 Dashboard ═══ -->
     <section class="stats-row" id="stats-row">
       <div class="stat-card">
         <div class="stat-icon budget"><i data-lucide="banknote"></i></div>
         <span class="stat-label">Total Budget</span>
         <span class="stat-value" id="stat-total-budget">—</span>
+        <span class="stat-context" id="stat-budget-context">across all projects</span>
       </div>
       <div class="stat-card">
         <div class="stat-icon pending"><i data-lucide="hourglass"></i></div>
         <span class="stat-label">Pending</span>
         <span class="stat-value" id="stat-pending">—</span>
+        <span class="stat-context" id="stat-pending-context">—</span>
       </div>
       <div class="stat-card">
         <div class="stat-icon ongoing"><i data-lucide="hammer"></i></div>
         <span class="stat-label">Ongoing</span>
         <span class="stat-value" id="stat-ongoing">—</span>
+        <span class="stat-context" id="stat-ongoing-context">—</span>
       </div>
       <div class="stat-card">
         <div class="stat-icon completed"><i data-lucide="check-circle-2"></i></div>
         <span class="stat-label">Completed</span>
         <span class="stat-value" id="stat-completed">—</span>
+        <span class="stat-context" id="stat-completed-context">—</span>
       </div>
       <div class="stat-card">
         <div class="stat-icon" style="background:#FEE2E2; color:#991B1B"><i data-lucide="alert-triangle"></i></div>
         <span class="stat-label">Delayed</span>
         <span class="stat-value" id="stat-delayed">—</span>
+        <span class="stat-context" id="stat-delayed-context">—</span>
       </div>
+    </section>
+
+    <!-- Quick Insights -->
+    <section class="insights-strip" id="insights-strip"></section>
+
+    <!-- Budget Breakdown Bar -->
+    <section class="breakdown-card" id="breakdown-card">
+      <h3 class="chart-card-title"><span class="inline-icon"><i data-lucide="bar-chart-horizontal"></i></span> Budget Allocation</h3>
+      <div class="breakdown-bar" id="breakdown-bar"></div>
+      <div class="breakdown-legend" id="breakdown-legend"></div>
     </section>
 
     <!-- Analytics Charts -->
     <section class="analytics-section" id="analytics-section">
       <div class="chart-card">
         <h3 class="chart-card-title"><span class="inline-icon"><i data-lucide="pie-chart"></i></span> Budget by Status</h3>
-        <div class="chart-container" style="max-width:260px;margin:0 auto"><canvas id="budget-chart"></canvas></div>
+        <div class="chart-container" style="max-width:260px;margin:0 auto;position:relative"><canvas id="budget-chart"></canvas><div class="doughnut-center" id="doughnut-center"><span class="doughnut-center-label">Total</span><span class="doughnut-center-value" id="doughnut-center-value">—</span></div></div>
       </div>
       <div class="chart-card">
         <h3 class="chart-card-title"><span class="inline-icon"><i data-lucide="bar-chart-3"></i></span> Project Count by Status</h3>
@@ -698,10 +714,11 @@
       requestAnimationFrame(step);
     }
 
-    // Override updateStats to use counters
+    // Override updateStats to use counters + context percentages
     var origUpdateStats = updateStats;
     updateStats = function(projects) {
       var total = 0, pending = 0, ongoing = 0, completed = 0, delayed = 0;
+      var n = projects.length || 1;
       for (var i = 0; i < projects.length; i++) {
         total += Number(projects[i].total_budget);
         if (projects[i].status === 'Pending') pending++;
@@ -714,7 +731,70 @@
       countUp(document.getElementById('stat-ongoing'), ongoing);
       countUp(document.getElementById('stat-completed'), completed);
       countUp(document.getElementById('stat-delayed'), delayed);
+
+      // Context percentages
+      document.getElementById('stat-budget-context').textContent = 'across ' + projects.length + ' projects';
+      document.getElementById('stat-pending-context').textContent = Math.round((pending/n)*100) + '% of projects';
+      document.getElementById('stat-ongoing-context').textContent = Math.round((ongoing/n)*100) + '% of projects';
+      document.getElementById('stat-completed-context').textContent = Math.round((completed/n)*100) + '% of projects';
+      document.getElementById('stat-delayed-context').textContent = Math.round((delayed/n)*100) + '% of projects';
+
+      // Quick Insights
+      renderInsights(projects, total, pending, ongoing, completed, delayed);
+
+      // Budget Breakdown Bar
+      renderBreakdownBar(projects, total);
+
+      // Doughnut center value
+      document.getElementById('doughnut-center-value').textContent = '₱' + Math.round(total).toLocaleString('en-PH');
     };
+
+    function renderInsights(projects, total, pending, ongoing, completed, delayed) {
+      var strip = document.getElementById('insights-strip');
+      var insights = [];
+
+      if (delayed > 0) {
+        var delayedBudget = 0;
+        projects.forEach(function(p) { if (p.status === 'Delayed') delayedBudget += Number(p.total_budget); });
+        insights.push({ icon: 'alert-triangle', color: '#EF4444', text: '₱' + Math.round(delayedBudget).toLocaleString('en-PH') + ' at risk in ' + delayed + ' delayed project' + (delayed > 1 ? 's' : '') });
+      }
+      if (completed > 0) {
+        var pct = Math.round((completed / projects.length) * 100);
+        insights.push({ icon: 'check-circle-2', color: '#10B981', text: pct + '% completion rate — ' + completed + ' project' + (completed > 1 ? 's' : '') + ' delivered' });
+      }
+      if (ongoing > 0) {
+        var ongoingBudget = 0;
+        projects.forEach(function(p) { if (p.status === 'Ongoing') ongoingBudget += Number(p.total_budget); });
+        insights.push({ icon: 'hammer', color: '#3B82F6', text: '₱' + Math.round(ongoingBudget).toLocaleString('en-PH') + ' currently being spent across ' + ongoing + ' ongoing project' + (ongoing > 1 ? 's' : '') });
+      }
+
+      strip.innerHTML = insights.map(function(ins) {
+        return '<div class="insight-chip"><span class="inline-icon" style="color:' + ins.color + '"><i data-lucide="' + ins.icon + '"></i></span> ' + ins.text + '</div>';
+      }).join('');
+      lucide.createIcons();
+    }
+
+    function renderBreakdownBar(projects, total) {
+      if (total <= 0) return;
+      var statusMap = { Pending: { budget: 0, color: '#F59E0B' }, Ongoing: { budget: 0, color: '#3B82F6' }, Completed: { budget: 0, color: '#10B981' }, Delayed: { budget: 0, color: '#EF4444' } };
+      projects.forEach(function(p) {
+        if (statusMap[p.status]) statusMap[p.status].budget += Number(p.total_budget);
+      });
+
+      var barHtml = '';
+      var legendHtml = '';
+      var keys = ['Pending', 'Ongoing', 'Completed', 'Delayed'];
+      keys.forEach(function(key) {
+        var pct = (statusMap[key].budget / total) * 100;
+        if (pct > 0) {
+          barHtml += '<div class="breakdown-segment" style="width:' + pct.toFixed(1) + '%;background:' + statusMap[key].color + '" title="' + key + ': ' + pct.toFixed(0) + '%"></div>';
+        }
+        legendHtml += '<div class="breakdown-legend-item"><span class="breakdown-dot" style="background:' + statusMap[key].color + '"></span>' + key + ' <strong>₱' + Math.round(statusMap[key].budget).toLocaleString('en-PH') + '</strong> <span class="breakdown-pct">(' + pct.toFixed(0) + '%)</span></div>';
+      });
+
+      document.getElementById('breakdown-bar').innerHTML = barHtml;
+      document.getElementById('breakdown-legend').innerHTML = legendHtml;
+    }
   </script>
 </body>
 

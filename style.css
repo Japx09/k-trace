@@ -2045,6 +2045,162 @@ button {
 }
 
 /* ═══════════════════════════════════════════════
+   V5 — Enhanced Dashboard Comprehension
+   ═══════════════════════════════════════════════ */
+
+/* ── Stat Context Subtext ── */
+.stat-context {
+  font-size: 11px;
+  color: var(--text-tertiary);
+  font-weight: 500;
+  margin-top: 2px;
+  letter-spacing: 0.01em;
+}
+
+/* ── Quick Insights Strip ── */
+.insights-strip {
+  display: flex;
+  gap: var(--space-sm);
+  flex-wrap: wrap;
+  margin-bottom: var(--space-lg);
+}
+
+.insight-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 16px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--text-secondary);
+  box-shadow: var(--shadow-card);
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.insight-chip:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.insight-chip .inline-icon svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* ── Budget Breakdown Bar ── */
+.breakdown-card {
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-light);
+  padding: var(--space-lg);
+  box-shadow: var(--shadow-card);
+  margin-bottom: var(--space-lg);
+}
+
+.breakdown-bar {
+  display: flex;
+  height: 14px;
+  border-radius: var(--radius-full);
+  overflow: hidden;
+  margin-bottom: var(--space-md);
+  background: var(--border-light);
+}
+
+.breakdown-segment {
+  height: 100%;
+  transition: width 0.6s ease;
+  position: relative;
+}
+
+.breakdown-segment:first-child {
+  border-radius: var(--radius-full) 0 0 var(--radius-full);
+}
+
+.breakdown-segment:last-child {
+  border-radius: 0 var(--radius-full) var(--radius-full) 0;
+}
+
+.breakdown-segment:only-child {
+  border-radius: var(--radius-full);
+}
+
+.breakdown-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-md) var(--space-xl);
+}
+
+.breakdown-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+}
+
+.breakdown-legend-item strong {
+  color: var(--text-primary);
+}
+
+.breakdown-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.breakdown-pct {
+  color: var(--text-tertiary);
+  font-size: var(--font-size-xs);
+}
+
+/* ── Doughnut Center Text ── */
+.doughnut-center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -55%);
+  text-align: center;
+  pointer-events: none;
+}
+
+.doughnut-center-label {
+  display: block;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-tertiary);
+  font-weight: 600;
+}
+
+.doughnut-center-value {
+  display: block;
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--text-primary);
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Dark mode V5 additions ── */
+[data-theme="dark"] .insight-chip {
+  background: var(--bg-card);
+  border-color: var(--border-light);
+}
+
+[data-theme="dark"] .insight-chip:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+}
+
+[data-theme="dark"] .breakdown-card {
+  background: var(--bg-card);
+  border-color: var(--border-light);
+}
+
+/* ═══════════════════════════════════════════════
    V4 — Search, Charts, Leaderboard, Export
    ═══════════════════════════════════════════════ */
 

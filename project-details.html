@@ -20,11 +20,14 @@
           <span class="brand-tagline">Kabankalan Transparency</span>
         </div>
       </a>
-      <div class="nav-links">
-        <a href="index.html" class="nav-pill">Dashboard</a>
-        <a href="#" class="nav-pill active">Project Details</a>
-        <a href="contractors.html" class="nav-pill">Contractors</a>
+      <div class="nav-right">
+        <div class="nav-links" id="nav-links">
+          <a href="index.html" class="nav-pill">Dashboard</a>
+          <a href="#" class="nav-pill active">Project Details</a>
+          <a href="contractors.html" class="nav-pill">Contractors</a>
+        </div>
         <button class="theme-toggle" id="theme-toggle" aria-label="Toggle dark mode"><i data-lucide="moon"></i></button>
+        <button class="mobile-menu-btn" id="mobile-menu-btn" aria-label="Toggle menu"><i data-lucide="menu"></i></button>
       </div>
     </nav>
 
@@ -646,7 +649,22 @@
       await fetchBudgetItems();
       await fetchReportsAndVerifications();
       lucide.createIcons();
-    })();
+
+    // ── Mobile Menu Toggle ──
+    const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+    const navLinks = document.getElementById('nav-links');
+    if (mobileMenuBtn && navLinks) {
+      mobileMenuBtn.addEventListener('click', () => {
+        navLinks.classList.toggle('active');
+        const icon = mobileMenuBtn.querySelector('i');
+        if (navLinks.classList.contains('active')) {
+          icon.setAttribute('data-lucide', 'x');
+        } else {
+          icon.setAttribute('data-lucide', 'menu');
+        }
+        lucide.createIcons();
+      });
+    }
 
     // ── Dark Mode Toggle ──
     const themeToggle = document.getElementById('theme-toggle');
